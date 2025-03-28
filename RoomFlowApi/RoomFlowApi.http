@@ -1,0 +1,9 @@
+services.AddRouting(options =>
+{
+    options.ConstraintMap["int"] = typeof(IntRouteConstraint);
+});@RoomFlowApi_HostAddress = http://localhost:5156
+
+GET {{RoomFlowApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
