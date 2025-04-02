@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using RoomFlowApi.Context;
 using RoomFlowApi.Domain;
 using RoomFlowApi.Domain.Base;
@@ -17,7 +19,47 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(config =>
+{
+    config.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Room Matão API",
+        Version = "v1",
+        Description = "API para gerenciamento de eventos no Connect Matão"
+    });
+
+    config.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = @"<b>JWT Autorização</b> <br/> 
+                          Digite 'Bearer' [espaço] e em seguida colar seu token na caixa de texto abaixo.
+                          <br/> <br/>
+                          <b>Exemplo:</b> 'bearer 123456abcdefg...'",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    config.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header
+            },
+            new List<string>()
+        }
+    });
+});
+
+
 builder.Services.AddDbContext<RoomFlowContext>();
 
 builder.Services.AddAuthentication(
@@ -61,9 +103,12 @@ app.MapPost("sala/adicionar", (RoomFlowContext context, SalaAdicionarDTO categor
     };
 
     context.SalaSet.Add(sala);
-
+    context.SaveChanges();
     return Results.Created("Created", "Sala Cadastrada com Sucesso!");
-});
+    
+})
+    .RequireAuthorization()
+    .WithTags("Sala");
 
 app.MapGet("sala/listar", (RoomFlowContext context) =>
 {
@@ -72,9 +117,12 @@ app.MapGet("sala/listar", (RoomFlowContext context) =>
         Id = p.Id,
         Descricao = p.Descricao,
     }).AsEnumerable();
+    context.SaveChanges();
 
     return Results.Ok(listasalaDto);
-}).RequireAuthorization();
+}).RequireAuthorization()
+    .WithTags("Sala");
+
 
 app.MapPut("sala/atualizar", (RoomFlowContext context, SalaAtualizarDTO salaDto) =>
 {
@@ -86,7 +134,9 @@ app.MapPut("sala/atualizar", (RoomFlowContext context, SalaAtualizarDTO salaDto)
     context.SaveChanges();
 
     return Results.Ok(new BaseResponse("Sala Atualizada com Sucesso!"));
-});
+})
+       .RequireAuthorization()
+    .WithTags("Sala");
 
 app.MapDelete("sala/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
 {
@@ -98,7 +148,10 @@ app.MapDelete("sala/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
     context.SaveChanges();
 
     return Results.Ok(new BaseResponse("Sala Removida com Sucesso!"));
-});
+    
+})
+       .RequireAuthorization()
+    .WithTags("Sala");
 
 #endregion
 
@@ -113,7 +166,12 @@ app.MapPost("disciplina/adicionar", (RoomFlowContext context, DisciplinaAdcionar
     };
 
     context.DisciplinaSet.Add(disciplina);
-});
+    context.SaveChanges();
+
+    return Results.Created("Created", "Disciplina Cadastrada com Sucesso!");
+})
+    .RequireAuthorization()
+    .WithTags("Disciplina");
 
 app.MapGet("disciplina/listar", (RoomFlowContext context) =>
 {
@@ -125,10 +183,14 @@ app.MapGet("disciplina/listar", (RoomFlowContext context) =>
             Descricao = p.Descricao,
         })
         .AsEnumerable();
-    return Results.Ok(listaDisciplina);
-});
 
-    app.MapPut("disciplina/atualizar", (RoomFlowContext context, DisciplinaAtualizarDTO disciplinaDto) =>
+
+    return Results.Ok(listaDisciplina);
+})
+    .RequireAuthorization()
+    .WithTags("Disciplina");
+
+app.MapPut("disciplina/atualizar", (RoomFlowContext context, DisciplinaAtualizarDTO disciplinaDto) =>
     {
         var disciplina = context.DisciplinaSet.Find(disciplinaDto.id);
         if (disciplina is null)
@@ -138,17 +200,23 @@ app.MapGet("disciplina/listar", (RoomFlowContext context) =>
         disciplina.Descricao = disciplinaDto.Descricao;
         context.SaveChanges();
         return Results.Ok("Disciplina Atualizada com Sucesso!");
-    });
+    })
+    .RequireAuthorization()
+    .WithTags("Disciplina");
 
-        app.MapDelete("disciplina/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
+
+app.MapDelete("disciplina/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
     {
         var disciplina = context.DisciplinaSet.Find(id);
         context.DisciplinaSet.Remove(disciplina);
         context.SaveChanges();
         return Results.Ok("Disciplina Removida com Sucesso!");
-    });
+    })
+    .RequireAuthorization()
+    .WithTags("Disciplina");
 
-   
+
+
 #endregion
 
 #region Controller Turma
@@ -164,7 +232,10 @@ app.MapPost("turma/adicionar", (RoomFlowContext context, TurmaAdicionarDTO turma
 
     context.SaveChanges();
     return Results.Created("Created", "Turma Cadastrada com Sucesso!");
-});
+})
+    .RequireAuthorization()
+    .WithTags("Turma");
+
 app.MapGet("turma/listar", (RoomFlowContext context) =>
 {
     var listaturma = context.TurmaSet.Select(p => new
@@ -174,10 +245,11 @@ app.MapGet("turma/listar", (RoomFlowContext context) =>
     })
     .AsEnumerable();
     return Results.Ok(listaturma.AsEnumerable());
+})
+    .RequireAuthorization()
+    .WithTags("Turma");
 
-});
-
-    app.MapPut("turma/atualizar", (RoomFlowContext context, TurmaAtualizarDTO turmaDto) =>
+app.MapPut("turma/atualizar", (RoomFlowContext context, TurmaAtualizarDTO turmaDto) =>
 {
     var turma = context.TurmaSet.Find(turmaDto.Id);
     if (turma is null)
@@ -185,15 +257,19 @@ app.MapGet("turma/listar", (RoomFlowContext context) =>
     turma.Descricao = turmaDto.Descricao;
     context.SaveChanges();
     return Results.Ok("Turma Atualizada com Sucesso!");
-});
+})
+    .RequireAuthorization()
+    .WithTags("Turma");
 
-    app.MapDelete("turma/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
+app.MapDelete("turma/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
 {
     var turma = context.TurmaSet.Find(id);
     context.TurmaSet.Remove(turma);
     context.SaveChanges();
     return Results.Ok("Turma Removida com Sucesso!");
-});
+})
+    .RequireAuthorization()
+    .WithTags("Turma");
 
 #endregion
 
@@ -210,7 +286,9 @@ app.MapPost("curso/adicionar", (RoomFlowContext context, CursoAdicionarDTO curso
     context.CursoSet.Add(curso);
     context.SaveChanges();
     return Results.Created("Created", "Curso Cadastrada com Sucesso!");
-});
+})
+    .RequireAuthorization()
+    .WithTags("Curso");
 
 app.MapGet("curso/listar", (RoomFlowContext context) =>
 {
@@ -222,8 +300,11 @@ app.MapGet("curso/listar", (RoomFlowContext context) =>
     }).AsEnumerable();
 
     return Results.Ok(listacurso.AsEnumerable());
-});
-    app.MapPut("curso/atualizar", (RoomFlowContext context, CursoAtualizarDTO cursoDto) =>
+})
+    .RequireAuthorization()
+    .WithTags("Curso");
+
+app.MapPut("curso/atualizar", (RoomFlowContext context, CursoAtualizarDTO cursoDto) =>
     {
         var curso = context.CursoSet.Find(cursoDto.Id);
         if (curso is null)
@@ -239,7 +320,9 @@ app.MapGet("curso/listar", (RoomFlowContext context) =>
         context.CursoSet.Remove(curso);
         context.SaveChanges();
         return Results.Ok("Curso Removido com Sucesso!");
-    });
+    })
+    .RequireAuthorization()
+    .WithTags("Curso");
 
 #endregion
 
@@ -257,10 +340,12 @@ app.MapPost("usuario/adicionar", (RoomFlowContext context, UsuarioAdicionarDTO u
     context.UsuarioSet.Add(usuario);
     context.SaveChanges();
     return Results.Created("Created", "Usuario Cadastrada com Sucesso!");
-});
+})
+    .RequireAuthorization()
+    .WithTags("Usuário");
 app.MapGet("usuario/listar", (RoomFlowContext context) =>
 {
-    var listausuario = context.UsuarioSet.Select(p => new 
+    var listausuario = context.UsuarioSet.Select(p => new
     {
         Id = p.Id,
         Nome = p.Nome,
@@ -269,7 +354,9 @@ app.MapGet("usuario/listar", (RoomFlowContext context) =>
     }).ToList();
     return Results.Ok(listausuario.AsEnumerable());
 
-});
+})
+    .RequireAuthorization()
+    .WithTags("Usuário");
 
 app.MapPut("usuario/atualizar", (RoomFlowContext context, UsuarioAtualizarDTO usuarioDto) =>
 {
@@ -281,15 +368,20 @@ app.MapPut("usuario/atualizar", (RoomFlowContext context, UsuarioAtualizarDTO us
     usuario.Perfil = usuarioDto.Perfil;
     context.SaveChanges();
     return Results.Ok("Usuario Atualizada com Sucesso!");
-});
-        app.MapDelete("usuario/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
+})
+    .RequireAuthorization()
+    .WithTags("Usuário");
+
+app.MapDelete("usuario/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
     {
 
         var usuario = context.UsuarioSet.Find(id);
         context.UsuarioSet.Remove(usuario);
         context.SaveChanges();
         return Results.Ok("Usuario Removida com Sucesso!");
-    });
+    })
+    .RequireAuthorization()
+    .WithTags("Usuário");
 
 #endregion
 
@@ -309,7 +401,10 @@ app.MapPost("aula/adicionar", (RoomFlowContext context, AulaAdicionarDto aulaDto
     context.AulaSet.Add(aula);
     context.SaveChanges();
     return Results.Created("Created", "Aula Cadastrada com Sucesso!");
-});
+})
+    .RequireAuthorization()
+    .WithTags("Aula");
+
 app.MapGet("aula/listar", (RoomFlowContext context) =>
 {
     var listaaula = context.AulaSet.Select(p => new 
@@ -323,9 +418,11 @@ app.MapGet("aula/listar", (RoomFlowContext context) =>
     }).ToList();
     return Results.Ok(listaaula.AsEnumerable());
 
-});
+})
+    .RequireAuthorization()
+    .WithTags("Aula");
 
-    app.MapPut("aula/atualizar", (RoomFlowContext context, AulaAtualizarDto aulaDto) =>
+app.MapPut("aula/atualizar", (RoomFlowContext context, AulaAtualizarDto aulaDto) =>
     {
         var aula = context.AulaSet.Find(aulaDto.Id);
 
@@ -339,25 +436,31 @@ app.MapGet("aula/listar", (RoomFlowContext context) =>
         aula.professorId = aulaDto.professorId;
         context.SaveChanges();
         return Results.Ok("Aula Atualizada com Sucesso!");
-    });
+    })
+    .RequireAuthorization()
+    .WithTags("Aula");
 
-        app.MapDelete("aula/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
+app.MapDelete("aula/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
     {
         
         var aula = context.AulaSet.Find(id);
         context.AulaSet.Remove(aula);
         context.SaveChanges();
         return Results.Ok("Aula Removida com Sucesso!");
-    });
+    })
+    .RequireAuthorization()
+    .WithTags("Aula");
 
 #endregion
 
+#region Controller Autenticar
 app.MapPost
     ("autenticar", (RoomFlowContext context,
                     LoginDto loginDto) =>
     {
         if (loginDto.Login == "Etec" && 
-            loginDto.Senha == "123")
+            loginDto.Senha == "123"
+            )
         {
             var claims = new[]
             {
@@ -396,5 +499,5 @@ app.MapPost
         return Results.BadRequest(new BaseResponse("Usuário ou Senha Inválidos"));
     });
 
-
+#endregion
 app.Run();
