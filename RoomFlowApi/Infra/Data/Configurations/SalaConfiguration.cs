@@ -15,6 +15,11 @@ namespace RoomFlowApi.Configurations
                 .IsRequired()
                 .HasMaxLength(100);
 
+            builder.Property(p => p.StatusSala)
+                .IsRequired()
+                .HasConversion<string>();
+            
+
             builder.ToTable("TAB_Sala");
         }
     }

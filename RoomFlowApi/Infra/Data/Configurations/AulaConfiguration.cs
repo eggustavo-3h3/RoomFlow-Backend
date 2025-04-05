@@ -11,11 +11,11 @@ namespace RoomFlowApi.Configurations
             builder.HasKey(p => p.Id);
             builder.Property(p => p.Bloco)
                 .IsRequired();
-            builder.Property(p => p.Sala)
+            builder.Property(p => p.SalaId)
                 .IsRequired();
             builder.Property(p => p.DisciplinaId)
                 .IsRequired();
-            builder.Property(p => p.Turma)
+            builder.Property(p => p.TurmaId)
                 .IsRequired();
             builder.Property(p => p.Data)
                 .IsRequired();

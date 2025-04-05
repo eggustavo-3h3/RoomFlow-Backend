@@ -8,7 +8,7 @@
 
         #region Propriedades de Navegabilidade
 
-        public Curso Curso { get; set; }
+        public Curso? Curso { get; set; }
 
         #endregion
     }

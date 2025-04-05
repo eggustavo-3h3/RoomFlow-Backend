@@ -7,6 +7,6 @@ namespace RoomFlowApi.Domain
         public Guid Id { get; set; }
         public string Descricao { get; set; } = string.Empty;
 
-        public EnumStatusSala statusSala {  get; set; } 
+        public EnumStatusSala StatusSala {  get; set; } 
     }
 }

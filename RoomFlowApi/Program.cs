@@ -16,8 +16,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(config =>
 {
@@ -93,6 +96,11 @@ app.UseAuthorization();
 
 app.UseHttpsRedirection();
 
+app.UseCors(x => x
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowAnyOrigin()
+    );
 #region Controller Sala
 app.MapPost("sala/adicionar", (RoomFlowContext context, SalaAdicionarDTO categoriaDto) =>
 {
@@ -100,6 +108,7 @@ app.MapPost("sala/adicionar", (RoomFlowContext context, SalaAdicionarDTO categor
     {
         Id = Guid.NewGuid(),
         Descricao = categoriaDto.Descricao,
+        StatusSala = categoriaDto.StatusSala,
     };
 
     context.SalaSet.Add(sala);
