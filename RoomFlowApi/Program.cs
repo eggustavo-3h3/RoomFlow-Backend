@@ -12,6 +12,7 @@ using RoomFlowApi.Domain.DTO.Login;
 using RoomFlowApi.Domain.DTO.Sala;
 using RoomFlowApi.Domain.DTO.Turma;
 using RoomFlowApi.Domain.DTO.Usuario;
+using RoomFlowApi.Domain.Util;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -342,8 +343,9 @@ app.MapPost("usuario/adicionar", (RoomFlowContext context, UsuarioAdicionarDTO u
     {
         Id = Guid.NewGuid(),
         Nome = usuarioDto.Nome,
-        Senha = usuarioDto.Senha,
+        Senha = usuarioDto.Senha.ToMD5(),
         Perfil = usuarioDto.Perfil,
+        Login = usuarioDto.Login
     };
 
     context.UsuarioSet.Add(usuario);
@@ -467,30 +469,31 @@ app.MapPost
     ("autenticar", (RoomFlowContext context,
                     LoginDto loginDto) =>
     {
-        if (loginDto.Login == "Etec" && 
-            loginDto.Senha == "123"
-            )
+
+        var usuario = context.UsuarioSet.Where(u => u.Login == loginDto.Login && u.Senha == loginDto.Senha.ToMD5()).FirstOrDefault();
+
+        if (usuario != null)
         {
             var claims = new[]
             {
-                new Claim("Nome", loginDto.Login),
+                new Claim("Nome", usuario.Nome),
+                new Claim("Login", usuario.Login),
+                new Claim("Perfil", usuario.Perfil.ToString()),
             };
 
             //Recebe uma instância da Classe
             //   SymmetricSecurityKey armazenando a
             //   chave de criptografia
             //   usada na criação do Token
-            var key = 
-            new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("" +
-                "{4ea4267e-eeae-4a10-8a05-8c237c13cb55}"));
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes("{4ea4267e-eeae-4a10-8a05-8c237c13cb55}")
+            );
 
             //Recebe um objeto do tipo SigninCredentials
             //  contendo a chave de criptografia e o algoritimo
             //  de seguran�a empregados na geração de assinaturas
             //  digitais para tokens
-            var creds = new SigningCredentials(key, 
-                SecurityAlgorithms.HmacSha256);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: "room.flow",
