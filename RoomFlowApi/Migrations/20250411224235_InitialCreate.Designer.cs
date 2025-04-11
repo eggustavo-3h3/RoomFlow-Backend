@@ -12,8 +12,8 @@ using RoomFlowApi.Context;
 namespace RoomFlowApi.Migrations
 {
     [DbContext(typeof(RoomFlowContext))]
-    [Migration("20250404233414_ColunaStatusSala")]
-    partial class ColunaStatusSala
+    [Migration("20250411224235_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
