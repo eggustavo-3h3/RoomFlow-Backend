@@ -1,4 +1,5 @@
-﻿using RoomFlowApi.Enumerators;
+﻿using RoomFlowApi.Domain.Enumerators;
+using RoomFlowApi.Enumerators;
 
 namespace RoomFlowApi.Domain.DTO.Sala
 {
@@ -8,5 +9,10 @@ namespace RoomFlowApi.Domain.DTO.Sala
         public string Descricao { get; set; } = string.Empty;
 
         public EnumStatusSala StatusSala { get; set; }
+
+        public EnumTipoSala TipoSala { get; set; }
+
+
+
     }
 }

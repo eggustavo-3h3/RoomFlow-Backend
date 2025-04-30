@@ -31,10 +31,16 @@ namespace RoomFlowApi.Migrations
                     b.Property<int>("Bloco")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("CursoId")
+                        .HasColumnType("char(36)");
+
                     b.Property<DateTime>("Data")
                         .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("DisciplinaId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ProfessorId")
                         .HasColumnType("char(36)");
 
                     b.Property<Guid>("SalaId")
@@ -44,9 +50,6 @@ namespace RoomFlowApi.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<Guid?>("UsuarioId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid>("professorId")
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
@@ -115,6 +118,10 @@ namespace RoomFlowApi.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.Property<string>("StatusSala")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TipoSala")
                         .IsRequired()
                         .HasColumnType("longtext");
 

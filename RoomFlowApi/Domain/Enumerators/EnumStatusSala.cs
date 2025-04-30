@@ -4,9 +4,9 @@
     
  
         {
-            Disponivel = 1,
-            Ocupada = 2,
-            indisponivel = 3
+            Disponivel = 0,
+            Ocupada = 1,
+            indisponivel = 2
         }
     }
 
