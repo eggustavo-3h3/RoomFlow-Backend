@@ -27,9 +27,9 @@ builder.Services.AddSwaggerGen(config =>
 {
     config.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Room Matão API",
+        Title = "Room Flow API",
         Version = "v1",
-        Description = "API para gerenciamento de eventos no Connect Matão"
+        Description = "API para gerenciamento de Salas da Etec"
     });
 
     config.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -103,13 +103,14 @@ app.UseCors(x => x
     .AllowAnyOrigin()
     );
 #region Controller Sala
-app.MapPost("sala/adicionar", (RoomFlowContext context, SalaAdicionarDTO categoriaDto) =>
+app.MapPost("sala/adicionar", (RoomFlowContext context, SalaAdicionarDTO SalaAdicionarDTO) =>
 {
     var sala = new Sala
     {
         Id = Guid.NewGuid(),
-        Descricao = categoriaDto.Descricao,
-        StatusSala = categoriaDto.StatusSala,
+        Descricao = SalaAdicionarDTO.Descricao,
+        StatusSala = SalaAdicionarDTO.StatusSala,
+        TipoSala = SalaAdicionarDTO.TipoSala
     };
 
     context.SalaSet.Add(sala);
@@ -130,7 +131,7 @@ app.MapGet("sala/listar", (RoomFlowContext context) =>
     context.SaveChanges();
 
     return Results.Ok(listasalaDto);
-}).RequireAuthorization()
+})
     .WithTags("Sala");
 
 
@@ -141,6 +142,8 @@ app.MapPut("sala/atualizar", (RoomFlowContext context, SalaAtualizarDTO salaDto)
         return Results.BadRequest(new BaseResponse("Sala não Encontrada"));
 
     sala.Descricao = salaDto.Descricao;
+    sala.StatusSala = salaDto.StatusSala;
+    sala.TipoSala = salaDto.TipoSala;
     context.SaveChanges();
 
     return Results.Ok(new BaseResponse("Sala Atualizada com Sucesso!"));
@@ -289,7 +292,7 @@ app.MapPost("curso/adicionar", (RoomFlowContext context, CursoAdicionarDTO curso
     var curso = new Curso
     {
         Id = Guid.NewGuid(),
-        Nome = cursoDto.Nome,
+        Nome = cursoDto.Curso,
         Periodo = cursoDto.Periodo,
     };
 
@@ -341,7 +344,6 @@ app.MapPost("usuario/adicionar", (RoomFlowContext context, UsuarioAdicionarDTO u
 {
     var usuario = new Usuario
     {
-        Id = Guid.NewGuid(),
         Nome = usuarioDto.Nome,
         Senha = usuarioDto.Senha.ToMD5(),
         Perfil = usuarioDto.Perfil,
@@ -359,8 +361,8 @@ app.MapGet("usuario/listar", (RoomFlowContext context) =>
     var listausuario = context.UsuarioSet.Select(p => new
     {
         Id = p.Id,
+        Login = p.Login,
         Nome = p.Nome,
-        Senha = p.Senha,
         Perfil = p.Perfil,
     }).ToList();
     return Results.Ok(listausuario.AsEnumerable());
@@ -400,13 +402,14 @@ app.MapDelete("usuario/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
 app.MapPost("aula/adicionar", (RoomFlowContext context, AulaAdicionarDto aulaDto) =>
 {
     var aula = new Aula
+
     {
         Id = Guid.NewGuid(),
         DisciplinaId = aulaDto.DisciplinaId,
         SalaId = aulaDto.SalaId,
         TurmaId = aulaDto.TurmaId,
         Data = aulaDto.Data,
-        professorId = aulaDto.professorId
+        ProfessorId = aulaDto.ProfessorId
     };
 
     context.AulaSet.Add(aula);
@@ -418,19 +421,20 @@ app.MapPost("aula/adicionar", (RoomFlowContext context, AulaAdicionarDto aulaDto
 
 app.MapGet("aula/listar", (RoomFlowContext context) =>
 {
-    var listaaula = context.AulaSet.Select(p => new 
+    var listaula = context.AulaSet.Select(p => new
     {
         Id = p.Id,
-        DisciplinaId = p.DisciplinaId,
-        SalaId = p.SalaId,
-        TurmaId = p.TurmaId,
+        UsuarioNome = p.Usuario.Nome,
+        DisciplinaNome = p.Disciplina.Nome,
+        SalaNome = p.Sala.Descricao,
+        TurmaDescricao = p.Turma.Descricao,
         Data = p.Data,
-        professorId = p.professorId,
+
     }).ToList();
-    return Results.Ok(listaaula.AsEnumerable());
+    return Results.Ok(listaula.AsEnumerable());
 
 })
-    .RequireAuthorization()
+    
     .WithTags("Aula");
 
 app.MapPut("aula/atualizar", (RoomFlowContext context, AulaAtualizarDto aulaDto) =>
@@ -444,7 +448,7 @@ app.MapPut("aula/atualizar", (RoomFlowContext context, AulaAtualizarDto aulaDto)
         aula.SalaId = aulaDto.SalaId;
         aula.TurmaId = aulaDto.TurmaId;
         aula.Data = aulaDto.Data;
-        aula.professorId = aulaDto.professorId;
+        aula.ProfessorId = aulaDto.professorId;
         context.SaveChanges();
         return Results.Ok("Aula Atualizada com Sucesso!");
     })
@@ -461,6 +465,48 @@ app.MapDelete("aula/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
     })
     .RequireAuthorization()
     .WithTags("Aula");
+
+app.MapPost("aula/gerador", (RoomFlowContext context, AulaAdicionarDto aulaDto) =>
+
+{
+    var aulas = new List<Aula>();
+
+    DateTime dataAtual = aulaDto.DataInicio;
+
+    while (dataAtual.DayOfWeek != aulaDto.DiaSemana)
+    {
+        dataAtual = dataAtual.AddDays(1);
+    }
+
+    while(dataAtual <= aulaDto.DataFim)
+    {
+        var aula = new Aula
+        {
+            Id = Guid.NewGuid(),
+            DisciplinaId = aulaDto.DisciplinaId,
+            SalaId = aulaDto.SalaId,
+            TurmaId = aulaDto.TurmaId,
+            Data = dataAtual,
+            ProfessorId = aulaDto.ProfessorId,
+            Bloco = aulaDto.Bloco,
+            CursoId = aulaDto.CursoId
+            
+
+        };
+
+        aulas.Add(aula);
+        dataAtual = dataAtual.AddDays(7);
+
+    }
+    context.AulaSet.AddRange(aulas);
+    context.SaveChanges();
+
+    return Results.Created("Created", $"{aulas.Count} Aula(s) cadastrada(s) com sucesso!");
+
+
+})
+    .WithTags("Aula");
+
 
 #endregion
 
@@ -510,6 +556,12 @@ app.MapPost
 
         return Results.BadRequest(new BaseResponse("Usuário ou Senha Inválidos"));
     });
+
+#endregion
+
+#region Controller Gerador
+
+
 
 #endregion
 app.Run();

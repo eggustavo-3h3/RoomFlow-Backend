@@ -8,6 +8,7 @@
         public Guid TurmaId { get; set; }
         public DateTime Data { get; set; }
         public Guid professorId { get; set; }
+        public Guid CursoId { get; set; }
     }
 }
 

@@ -1,8 +1,13 @@
-﻿namespace RoomFlowApi.Domain.DTO.Turma
+﻿using RoomFlowApi.Enumerators;
+
+namespace RoomFlowApi.Domain.DTO.Turma
 {
     public class TurmaAdicionarDTO
     {
         public string Descricao { get; set; } = string.Empty;
         public Guid CursoId { get; set; }
+        public EnumBloco Enum { get; set; }
+     
+        
     }
 }

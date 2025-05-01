@@ -19,7 +19,9 @@ namespace RoomFlowApi.Configurations
                 .IsRequired();
             builder.Property(p => p.Data)
                 .IsRequired();
-            builder.Property(p => p.professorId)
+            builder.Property(p => p.ProfessorId)
+                .IsRequired();
+            builder.Property(p => p.CursoId)
                 .IsRequired();
 
             builder.ToTable("TAB_Aula");

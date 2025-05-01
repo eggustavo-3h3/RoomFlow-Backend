@@ -10,7 +10,9 @@ namespace RoomFlowApi.Domain
         public Guid SalaId { get; set; }
         public Guid TurmaId { get; set; }
         public DateTime Data { get; set; }
-        public Guid professorId { get; set; }
+        public Guid ProfessorId { get; set; }
+        public Guid CursoId { get; set; }
+
         
         #region Propriedades de Navegabilidade
 
