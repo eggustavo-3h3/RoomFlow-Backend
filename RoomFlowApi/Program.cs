@@ -127,8 +127,9 @@ app.MapGet("sala/listar", (RoomFlowContext context) =>
     {
         Id = p.Id,
         Descricao = p.Descricao,
+        StatusSala = p.StatusSala,
+        TipoSala = p.TipoSala
     }).AsEnumerable();
-    context.SaveChanges();
 
     return Results.Ok(listasalaDto);
 })
@@ -239,6 +240,7 @@ app.MapPost("turma/adicionar", (RoomFlowContext context, TurmaAdicionarDTO turma
     {
         Id = Guid.NewGuid(),
         Descricao = turmaDto.Descricao,
+        CursoId = turmaDto.CursoId,
     };
 
     context.TurmaSet.Add(turma);
@@ -255,6 +257,7 @@ app.MapGet("turma/listar", (RoomFlowContext context) =>
     {
         Id = p.Id,
         Descricao = p.Descricao,
+        Curso = p.Curso,
     })
     .AsEnumerable();
     return Results.Ok(listaturma.AsEnumerable());
@@ -267,7 +270,11 @@ app.MapPut("turma/atualizar", (RoomFlowContext context, TurmaAtualizarDTO turmaD
     var turma = context.TurmaSet.Find(turmaDto.Id);
     if (turma is null)
         return Results.BadRequest(new BaseResponse("Turma não Encontrada"));
+
     turma.Descricao = turmaDto.Descricao;
+    turma.CursoId = turmaDto.CursoId;
+
+
     context.SaveChanges();
     return Results.Ok("Turma Atualizada com Sucesso!");
 })
@@ -292,7 +299,7 @@ app.MapPost("curso/adicionar", (RoomFlowContext context, CursoAdicionarDTO curso
     var curso = new Curso
     {
         Id = Guid.NewGuid(),
-        Nome = cursoDto.Curso,
+        Nome = cursoDto.Nome,
         Periodo = cursoDto.Periodo,
     };
 
