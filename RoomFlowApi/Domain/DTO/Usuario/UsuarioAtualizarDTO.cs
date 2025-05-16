@@ -1,4 +1,5 @@
-﻿using RoomFlowApi.Enumerators;
+﻿using RoomFlowApi.Domain.Enumerators;
+using RoomFlowApi.Enumerators;
 
 namespace RoomFlowApi.Domain.DTO.Usuario
 {
@@ -12,5 +13,7 @@ namespace RoomFlowApi.Domain.DTO.Usuario
         public string Senha { get; set; } = string.Empty;
 
         public EnumPerfilUsuario Perfil { get; set; }
+
+        public EnumStatusUsuario Status { get; set; }
     }
 }
