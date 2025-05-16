@@ -412,7 +412,6 @@ app.MapDelete("usuario/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
 #region controller aula
 app.MapPost("aula/adicionar", async (RoomFlowContext context, AulaAdicionarDto aulaDto) =>
 {
-    // Verifica se já existe uma aula com a mesma sala, bloco e data
     var aulaExistente = await context.AulaSet.FirstOrDefaultAsync(a =>
         a.SalaId == aulaDto.SalaId &&
         a.Bloco == aulaDto.Bloco && 
