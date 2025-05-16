@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -406,25 +407,37 @@ app.MapDelete("usuario/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
 #endregion
 
 #region controller aula
-app.MapPost("aula/adicionar", (RoomFlowContext context, AulaAdicionarDto aulaDto) =>
+app.MapPost("aula/adicionar", async (RoomFlowContext context, AulaAdicionarDto aulaDto) =>
 {
-    var aula = new Aula
+    // Verifica se já existe uma aula com a mesma sala, bloco e data
+    var aulaExistente = await context.AulaSet.FirstOrDefaultAsync(a =>
+        a.SalaId == aulaDto.SalaId &&
+        a.Bloco == aulaDto.Bloco && 
+        a.Data.Date == aulaDto.Data.Date); 
 
+    if (aulaExistente != null)
+    {
+        return Results.Conflict("Já existe uma aula cadastrada para a mesma sala, bloco e data.");
+    }
+
+    var aula = new Aula
     {
         Id = Guid.NewGuid(),
         DisciplinaId = aulaDto.DisciplinaId,
         SalaId = aulaDto.SalaId,
         TurmaId = aulaDto.TurmaId,
         Data = aulaDto.Data,
-        ProfessorId = aulaDto.ProfessorId
+        ProfessorId = aulaDto.ProfessorId,
+        Bloco = aulaDto.Bloco 
     };
 
     context.AulaSet.Add(aula);
-    context.SaveChanges();
-    return Results.Created("Created", "Aula Cadastrada com Sucesso!");
+    await context.SaveChangesAsync(); 
+
+    return Results.Created($"/aula/{aula.Disciplina}", "Aula Cadastrada com Sucesso!");
 })
-    .RequireAuthorization()
-    .WithTags("Aula");
+.RequireAuthorization()
+.WithTags("Aula");
 
 app.MapGet("aula/listar", (RoomFlowContext context) =>
 {
@@ -436,7 +449,7 @@ app.MapGet("aula/listar", (RoomFlowContext context) =>
         SalaNome = p.Sala.Descricao,
         TurmaDescricao = p.Turma.Descricao,
         Data = p.Data,
-
+        
     }).ToList();
     return Results.Ok(listaula.AsEnumerable());
 
@@ -566,9 +579,4 @@ app.MapPost
 
 #endregion
 
-#region Controller Gerador
-
-
-
-#endregion
 app.Run();
