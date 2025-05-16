@@ -355,7 +355,8 @@ app.MapPost("usuario/adicionar", (RoomFlowContext context, UsuarioAdicionarDTO u
         Nome = usuarioDto.Nome,
         Senha = usuarioDto.Senha.ToMD5(),
         Perfil = usuarioDto.Perfil,
-        Login = usuarioDto.Login
+        Login = usuarioDto.Login,
+        Status = usuarioDto.Status,
     };
 
     context.UsuarioSet.Add(usuario);
@@ -366,18 +367,19 @@ app.MapPost("usuario/adicionar", (RoomFlowContext context, UsuarioAdicionarDTO u
     .WithTags("Usuário");
 app.MapGet("usuario/listar", (RoomFlowContext context) =>
 {
-    var listausuario = context.UsuarioSet.Select(p => new
-    {
-        Id = p.Id,
-        Login = p.Login,
-        Nome = p.Nome,
-        Perfil = p.Perfil,
-    }).ToList();
-    return Results.Ok(listausuario.AsEnumerable());
-
+    var ListaUsuariosAtivos = context.UsuarioSet
+        .Where(p => ((int)p.Status) == 1) 
+        .Select(p => new
+        {
+            Id = p.Id,
+            Login = p.Login,
+            Nome = p.Nome,
+            Perfil = p.Perfil,
+        }).ToList();
+    return Results.Ok(ListaUsuariosAtivos.AsEnumerable());
 })
-    .RequireAuthorization()
-    .WithTags("Usuário");
+.RequireAuthorization()
+.WithTags("Usuário");
 
 app.MapPut("usuario/atualizar", (RoomFlowContext context, UsuarioAtualizarDTO usuarioDto) =>
 {
@@ -387,6 +389,7 @@ app.MapPut("usuario/atualizar", (RoomFlowContext context, UsuarioAtualizarDTO us
     usuario.Nome = usuarioDto.Nome;
     usuario.Senha = usuarioDto.Senha;
     usuario.Perfil = usuarioDto.Perfil;
+    usuario.Status = usuarioDto.Status;
     context.SaveChanges();
     return Results.Ok("Usuario Atualizada com Sucesso!");
 })
@@ -399,7 +402,7 @@ app.MapDelete("usuario/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
         var usuario = context.UsuarioSet.Find(id);
         context.UsuarioSet.Remove(usuario);
         context.SaveChanges();
-        return Results.Ok("Usuario Removida com Sucesso!");
+        return Results.Ok("Usuario Removido com Sucesso!");
     })
     .RequireAuthorization()
     .WithTags("Usuário");
