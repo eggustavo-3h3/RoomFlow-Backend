@@ -582,4 +582,36 @@ app.MapPost
 
 #endregion
 
+#region Controller AlterarSenha
+app.MapPut("usuario/alterarsenha", async (RoomFlowContext context, AlterarSenhaDTO alterarSenhaDto) =>
+{
+    if (alterarSenhaDto.NovaSenha != alterarSenhaDto.ConfirmarNovaSenha )
+    {
+        return Results.BadRequest(new { mensagem = "A nova senha e a confirmação não coincidem." });
+    }
+    
+    var usuario = await context.UsuarioSet.FindAsync(alterarSenhaDto.Login);
+
+    if (usuario is null)
+    {
+        return Results.NotFound(new { mensagem = "Usuário não encontrado." });
+    }
+    if (usuario.Senha != alterarSenhaDto.Senha.ToMD5())
+    {
+        return Results.BadRequest(new { mensagem = "Senha incorreta." });
+    }
+    var senha = alterarSenhaDto.NovaSenha.ToMD5();
+    usuario.Senha = senha;
+    await context.SaveChangesAsync();
+    return Results.Ok(new { mensagem = "Senha alterada com sucesso." });
+
+
+})
+    .RequireAuthorization()
+    .WithTags("Usuário");
+
+
+
+#endregion
+
 app.Run();
