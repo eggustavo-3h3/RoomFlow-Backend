@@ -14,11 +14,9 @@
         public Guid TurmaId { get; set; }
         public required string TurmaDescricao { get; set; }
 
-        public Guid UsuarioId { get; set; }
-        public required string UsuarioNome { get; set; }
+        public Guid ProfessorId { get; set; }
 
-
-
+        public required string ProfessorNome { get; set; }
 
 
     }

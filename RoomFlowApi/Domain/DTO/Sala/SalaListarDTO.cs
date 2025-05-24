@@ -11,5 +11,7 @@ namespace RoomFlowApi.Domain.DTO.Sala
         public EnumStatusSala StatusSala { get; set; }
 
         public EnumTipoSala TipoSala { get; set; }
+        public int NumeroSala { get; set; }
+
     }
 }
