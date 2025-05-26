@@ -1,4 +1,4 @@
-﻿using RoomFlowApi.Enumerators;
+﻿using RoomFlowApi.Domain.Enumerators;
 
 namespace RoomFlowApi.Domain.DTO.Curso
 {

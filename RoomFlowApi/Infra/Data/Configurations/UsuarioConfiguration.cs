@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using RoomFlowApi.Domain;
+using RoomFlowApi.Domain.Entities;
 
-
-namespace RoomFlowApi.Configurations
+namespace RoomFlowApi.Infra.Data.Configurations
 {
     public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
     {
@@ -18,6 +17,9 @@ namespace RoomFlowApi.Configurations
             builder.Property(p => p.Senha)
                 .IsRequired();
             // Adicionar lógica para valor mínimo de caracteres.
+
+            builder.Property(p => p.ChaveResetSenha)
+                .IsRequired(false);
 
             builder.Property(p => p.Perfil)
                 .IsRequired();

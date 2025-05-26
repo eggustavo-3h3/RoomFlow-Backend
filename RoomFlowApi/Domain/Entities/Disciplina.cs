@@ -1,4 +1,4 @@
-﻿namespace RoomFlowApi.Domain
+﻿namespace RoomFlowApi.Domain.Entities
 {
     public class Disciplina
     {

@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using RoomFlowApi.Configurations;
-using RoomFlowApi.Context;
 using RoomFlowApi.Domain;
 using RoomFlowApi.Domain.Base;
 using RoomFlowApi.Domain.DTO.Aula;
@@ -18,7 +16,11 @@ using RoomFlowApi.Domain.Util;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-
+using RoomFlowApi.Domain.Entities;
+using RoomFlowApi.Infra.Data.Context;
+using RoomFlowApi.Domain.AlterarSenha;
+using RoomFlowApi.Domain.ResetSenha;
+using RoomFlowApi.Infra.Email;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -87,7 +89,12 @@ builder.Services.AddAuthentication(
                 "{4ea4267e-eeae-4a10-8a05-8c237c13cb55}"))
         };
     });
-builder.Services.AddAuthorization();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Administrador", policy => policy.RequireRole("Administrador"));
+    options.AddPolicy("Professor", policy => policy.RequireRole("Professor", "Administrador"));
+});
 
 var app = builder.Build();
 
@@ -695,21 +702,20 @@ app.MapGet("aula/listar/{id:guid}", (RoomFlowContext context, Guid id) =>
 
 #endregion
 
-#region Controller Autenticar
-app.MapPost
-    ("autenticar", (RoomFlowContext context,
-                    LoginDto loginDto) =>
-    {
+#region Controller Segurança
 
-        var usuario = context.UsuarioSet.Where(u => u.Login == loginDto.Login && u.Senha == loginDto.Senha.ToMD5()).FirstOrDefault();
+app.MapPost("autenticar", (RoomFlowContext context, LoginDto loginDto) =>
+    {
+        var usuario = context.UsuarioSet.FirstOrDefault(u => u.Login == loginDto.Login && u.Senha == loginDto.Senha.ToMD5());
 
         if (usuario != null)
         {
             var claims = new[]
             {
+                new Claim("Id", usuario.Id.ToString()),
                 new Claim("Nome", usuario.Nome),
                 new Claim("Login", usuario.Login),
-                new Claim("Perfil", usuario.Perfil.ToString()),
+                new Claim(ClaimTypes.Role, usuario.Perfil.ToString()),
             };
 
             //Recebe uma instância da Classe
@@ -740,40 +746,73 @@ app.MapPost
         }
 
         return Results.BadRequest(new BaseResponse("Usuário ou Senha Inválidos"));
-    });
+    }).WithTags("Segurança");
 
-#endregion
-
-#region Controller AlterarSenha
-app.MapPut("usuario/alterarsenha", async (RoomFlowContext context, AlterarSenhaDTO alterarSenhaDto) =>
+app.MapPost("gerar-chave-reset-senha", (RoomFlowContext context, GerarResetSenhaDto gerarResetSenhaDto) =>
 {
-    if (alterarSenhaDto.NovaSenha != alterarSenhaDto.ConfirmarNovaSenha )
+    var resultado = new GerarResetSenhaDtoValidator().Validate(gerarResetSenhaDto);
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
+    var startup = context.UsuarioSet.FirstOrDefault(p => p.Login == gerarResetSenhaDto.Email);
+
+    if (startup is not null)
     {
-        return Results.BadRequest(new { mensagem = "A nova senha e a confirmação não coincidem." });
+        startup.ChaveResetSenha = Guid.NewGuid();
+        context.UsuarioSet.Update(startup);
+        context.SaveChanges();
+
+        var emailService = new EmailService();
+        var enviarEmailResponse = emailService.EnviarEmail(gerarResetSenhaDto.Email, "Reset de Senha", $"https://url-front/reset-senha/{startup.ChaveResetSenha}", true);
+        if (!enviarEmailResponse.Sucesso)
+            return Results.BadRequest(new BaseResponse("Erro ao enviar o e-mail: " + enviarEmailResponse.Mensagem));
     }
-    
-    var usuario = await context.UsuarioSet.FindAsync(alterarSenhaDto.Login);
 
-    if (usuario is null)
-    {
-        return Results.NotFound(new { mensagem = "Usuário não encontrado." });
-    }
-    if (usuario.Senha != alterarSenhaDto.Senha.ToMD5())
-    {
-        return Results.BadRequest(new { mensagem = "Senha incorreta." });
-    }
-    var senha = alterarSenhaDto.NovaSenha.ToMD5();
-    usuario.Senha = senha;
-    await context.SaveChangesAsync();
-    return Results.Ok(new { mensagem = "Senha alterada com sucesso." });
+    return Results.Ok(new BaseResponse("Se o e-mail informado estiver correto, você receberá as instruções por e-mail."));
+}).WithTags("Segurança");
 
+app.MapPut("resetar-senha", (RoomFlowContext context, ResetSenhaDto resetSenhaDto) =>
+{
+    var resultado = new ResetSenhaDtoValidator().Validate(resetSenhaDto);
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
 
-})
-    .RequireAuthorization()
-    .WithTags("Usuário");
+    var startup = context.UsuarioSet.FirstOrDefault(p => p.ChaveResetSenha == resetSenhaDto.ChaveResetSenha);
 
+    if (startup is null)
+        return Results.BadRequest(new BaseResponse("Chave de reset de senha inválida."));
 
+    startup.Senha = resetSenhaDto.NovaSenha.ToMD5();
+    startup.ChaveResetSenha = null;
+    context.UsuarioSet.Update(startup);
+    context.SaveChanges();
+
+    return Results.Ok(new BaseResponse("Senha alterada com sucesso."));
+}).WithTags("Segurança");
+
+app.MapPut("alterar-senha", (RoomFlowContext context, ClaimsPrincipal claims, AlterarSenhaDto alterarSenhaDto) =>
+{
+    var resultado = new AlterarSenhaDtoValidator().Validate(alterarSenhaDto);
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
+    var userIdClaim = claims.FindFirst("Id")?.Value;
+    if (userIdClaim == null)
+        return Results.Unauthorized();
+
+    var userId = Guid.Parse(userIdClaim);
+    var startup = context.UsuarioSet.FirstOrDefault(p => p.Id == userId);
+    if (startup == null)
+        return Results.NotFound(new BaseResponse("Usuário não encontrado."));
+
+    startup.Senha = alterarSenhaDto.NovaSenha.ToMD5();
+    context.UsuarioSet.Update(startup);
+    context.SaveChanges();
+
+    return Results.Ok(new BaseResponse("Senha alterada com sucesso."));
+}).WithTags("Segurança");
 
 #endregion
+
 
 app.Run();

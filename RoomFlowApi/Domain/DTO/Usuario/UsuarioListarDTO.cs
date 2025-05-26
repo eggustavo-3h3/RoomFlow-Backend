@@ -1,5 +1,4 @@
 ﻿using RoomFlowApi.Domain.Enumerators;
-using RoomFlowApi.Enumerators;
 
 namespace RoomFlowApi.Domain.DTO.Usuario
 {

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RoomFlowApi.Context;
+using RoomFlowApi.Infra.Data.Context;
 
 #nullable disable
 
@@ -22,7 +22,7 @@ namespace RoomFlowApi.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Aula", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Aula", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -65,7 +65,7 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Aula", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Curso", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Curso", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,7 +85,7 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Curso", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Disciplina", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Disciplina", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -106,7 +106,7 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Disciplina", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Sala", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Sala", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -133,7 +133,7 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Sala", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Turma", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Turma", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -154,10 +154,13 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Turma", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Usuario", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Usuario", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("ChaveResetSenha")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Login")
@@ -184,27 +187,27 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Usuario", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Aula", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Aula", b =>
                 {
-                    b.HasOne("RoomFlowApi.Domain.Disciplina", "Disciplina")
+                    b.HasOne("RoomFlowApi.Domain.Entities.Disciplina", "Disciplina")
                         .WithMany()
                         .HasForeignKey("DisciplinaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RoomFlowApi.Domain.Sala", "Sala")
+                    b.HasOne("RoomFlowApi.Domain.Entities.Sala", "Sala")
                         .WithMany()
                         .HasForeignKey("SalaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RoomFlowApi.Domain.Turma", "Turma")
+                    b.HasOne("RoomFlowApi.Domain.Entities.Turma", "Turma")
                         .WithMany()
                         .HasForeignKey("TurmaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RoomFlowApi.Domain.Usuario", "Usuario")
+                    b.HasOne("RoomFlowApi.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId");
 
@@ -217,9 +220,9 @@ namespace RoomFlowApi.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Turma", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Turma", b =>
                 {
-                    b.HasOne("RoomFlowApi.Domain.Curso", "Curso")
+                    b.HasOne("RoomFlowApi.Domain.Entities.Curso", "Curso")
                         .WithMany()
                         .HasForeignKey("CursoId")
                         .OnDelete(DeleteBehavior.Cascade)

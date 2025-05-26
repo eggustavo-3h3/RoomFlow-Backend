@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RoomFlowApi.Configurations;
-using RoomFlowApi.Domain;
+using RoomFlowApi.Domain.Entities;
+using RoomFlowApi.Infra.Data.Configurations;
 
-namespace RoomFlowApi.Context
+namespace RoomFlowApi.Infra.Data.Context
 {
     public class RoomFlowContext : DbContext
     {

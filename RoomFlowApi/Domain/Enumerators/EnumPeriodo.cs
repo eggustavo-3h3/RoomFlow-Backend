@@ -1,4 +1,4 @@
-﻿namespace RoomFlowApi.Enumerators
+﻿namespace RoomFlowApi.Domain.Enumerators
 {
     public enum EnumPeriodo
     

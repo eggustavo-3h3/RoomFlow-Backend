@@ -1,6 +1,7 @@
-﻿namespace RoomFlowApi.Domain.DTO.Aula
+﻿using RoomFlowApi.Domain.Enumerators;
+
+namespace RoomFlowApi.Domain.DTO.Aula
 {
-    using RoomFlowApi.Enumerators;
     using System;
 
     public class AulaAdicionarDto

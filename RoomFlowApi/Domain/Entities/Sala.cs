@@ -1,7 +1,6 @@
 ﻿using RoomFlowApi.Domain.Enumerators;
-using RoomFlowApi.Enumerators;
 
-namespace RoomFlowApi.Domain
+namespace RoomFlowApi.Domain.Entities
 {
     public class Sala
     {

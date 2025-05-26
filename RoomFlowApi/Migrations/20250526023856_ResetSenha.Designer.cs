@@ -12,8 +12,8 @@ using RoomFlowApi.Infra.Data.Context;
 namespace RoomFlowApi.Migrations
 {
     [DbContext(typeof(RoomFlowContext))]
-    [Migration("20250411224235_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250526023856_ResetSenha")]
+    partial class ResetSenha
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace RoomFlowApi.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Aula", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Aula", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -34,10 +34,16 @@ namespace RoomFlowApi.Migrations
                     b.Property<int>("Bloco")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("CursoId")
+                        .HasColumnType("char(36)");
+
                     b.Property<DateTime>("Data")
                         .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("DisciplinaId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("ProfessorId")
                         .HasColumnType("char(36)");
 
                     b.Property<Guid>("SalaId")
@@ -47,9 +53,6 @@ namespace RoomFlowApi.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<Guid?>("UsuarioId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid>("professorId")
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
@@ -65,7 +68,7 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Aula", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Curso", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Curso", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,7 +88,7 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Curso", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Disciplina", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Disciplina", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -106,7 +109,7 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Disciplina", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Sala", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Sala", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -117,7 +120,14 @@ namespace RoomFlowApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<int>("NumeroSala")
+                        .HasColumnType("int");
+
                     b.Property<string>("StatusSala")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TipoSala")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -126,7 +136,7 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Sala", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Turma", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Turma", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -147,10 +157,13 @@ namespace RoomFlowApi.Migrations
                     b.ToTable("TAB_Turma", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Usuario", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Usuario", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid?>("ChaveResetSenha")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Login")
@@ -169,32 +182,35 @@ namespace RoomFlowApi.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("TAB_Usuario", (string)null);
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Aula", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Aula", b =>
                 {
-                    b.HasOne("RoomFlowApi.Domain.Disciplina", "Disciplina")
+                    b.HasOne("RoomFlowApi.Domain.Entities.Disciplina", "Disciplina")
                         .WithMany()
                         .HasForeignKey("DisciplinaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RoomFlowApi.Domain.Sala", "Sala")
+                    b.HasOne("RoomFlowApi.Domain.Entities.Sala", "Sala")
                         .WithMany()
                         .HasForeignKey("SalaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RoomFlowApi.Domain.Turma", "Turma")
+                    b.HasOne("RoomFlowApi.Domain.Entities.Turma", "Turma")
                         .WithMany()
                         .HasForeignKey("TurmaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("RoomFlowApi.Domain.Usuario", "Usuario")
+                    b.HasOne("RoomFlowApi.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId");
 
@@ -207,9 +223,9 @@ namespace RoomFlowApi.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("RoomFlowApi.Domain.Turma", b =>
+            modelBuilder.Entity("RoomFlowApi.Domain.Entities.Turma", b =>
                 {
-                    b.HasOne("RoomFlowApi.Domain.Curso", "Curso")
+                    b.HasOne("RoomFlowApi.Domain.Entities.Curso", "Curso")
                         .WithMany()
                         .HasForeignKey("CursoId")
                         .OnDelete(DeleteBehavior.Cascade)

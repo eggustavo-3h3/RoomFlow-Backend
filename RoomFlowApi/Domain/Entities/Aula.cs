@@ -1,6 +1,6 @@
-﻿using RoomFlowApi.Enumerators;
+﻿using RoomFlowApi.Domain.Enumerators;
 
-namespace RoomFlowApi.Domain
+namespace RoomFlowApi.Domain.Entities
 {
     public class Aula
     {

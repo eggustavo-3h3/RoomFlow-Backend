@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using RoomFlowApi.Domain;
+using RoomFlowApi.Domain.Entities;
 
-
-namespace RoomFlowApi.Configurations
+namespace RoomFlowApi.Infra.Data.Configurations
 {
     public class SalaConfiguration : IEntityTypeConfiguration<Sala>
     {

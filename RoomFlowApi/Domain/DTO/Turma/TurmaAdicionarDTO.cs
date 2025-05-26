@@ -1,6 +1,4 @@
-﻿using RoomFlowApi.Enumerators;
-
-namespace RoomFlowApi.Domain.DTO.Turma
+﻿namespace RoomFlowApi.Domain.DTO.Turma
 {
     public class TurmaAdicionarDTO
     {

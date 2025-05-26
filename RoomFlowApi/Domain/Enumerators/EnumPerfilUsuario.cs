@@ -1,10 +1,8 @@
-﻿namespace RoomFlowApi.Enumerators
+﻿namespace RoomFlowApi.Domain.Enumerators
 {
     public enum EnumPerfilUsuario
     {
-      Administrador = 1,
-      Professor = 2
-
-
+        Administrador = 1,
+        Professor = 2
     }
 }
