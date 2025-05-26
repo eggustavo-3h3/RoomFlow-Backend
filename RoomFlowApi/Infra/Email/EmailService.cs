@@ -7,7 +7,7 @@ namespace RoomFlowApi.Infra.Email;
 public class EmailService
 {
     private const string De = "no-reply@tccnapratica.com.br";
-    private const string NomeExibicao = "Startly";
+    private const string NomeExibicao = "Room Flow";
     private const string SmtpHost = "smtp.kinghost.net";
     private const string UserName = "no-reply@tccnapratica.com.br";
     private const string Senha = "Etec@2025";
