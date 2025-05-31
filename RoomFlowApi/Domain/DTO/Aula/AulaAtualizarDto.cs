@@ -1,4 +1,6 @@
-﻿namespace RoomFlowApi.Domain.DTO.Aula
+﻿using RoomFlowApi.Domain.Enumerators;
+
+namespace RoomFlowApi.Domain.DTO.Aula
 {
     public class AulaAtualizarDto
     {
@@ -9,6 +11,10 @@
         public DateTime Data { get; set; }
         public Guid professorId { get; set; }
         public Guid CursoId { get; set; }
+        public DayOfWeek DiaSemana { get; set; }
+        public DateTime DataInicio { get; set; }
+        public DateTime DataFim { get; set; }
+        public EnumBloco Bloco { get; set; }
     }
 }
 

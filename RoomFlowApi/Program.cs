@@ -21,6 +21,7 @@ using RoomFlowApi.Infra.Data.Context;
 using RoomFlowApi.Domain.AlterarSenha;
 using RoomFlowApi.Domain.ResetSenha;
 using RoomFlowApi.Infra.Email;
+using FluentValidation;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -114,6 +115,11 @@ app.UseCors(x => x
 #region Controller Sala
 app.MapPost("sala/adicionar", (RoomFlowContext context, SalaAdicionarDTO SalaAdicionarDTO) =>
 {
+    var resultado = new SalaAdicionarValidatorDTO().Validate(SalaAdicionarDTO);
+
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
     var sala = new Sala
     {
         Id = Guid.NewGuid(),
@@ -149,9 +155,12 @@ app.MapGet("sala/listar", (RoomFlowContext context) =>
 
 app.MapPut("sala/atualizar", (RoomFlowContext context, SalaAtualizarDTO salaDto) =>
 {
+    var resultado = new SalaAtualizarValidatorDTO().Validate(salaDto);
+
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
     var sala = context.SalaSet.Find(salaDto.Id);
-    if (sala is null)
-        return Results.BadRequest(new BaseResponse("Sala não Encontrada"));
 
     sala.Descricao = salaDto.Descricao;
     sala.StatusSala = salaDto.StatusSala;
@@ -205,6 +214,11 @@ app.MapGet("sala/listar/{id:guid}", (RoomFlowContext context, Guid id ) =>
 #region controller disciplina
 app.MapPost("disciplina/adicionar", (RoomFlowContext context, DisciplinaAdcionarDTO disciplinaDto) =>
 {
+    var resultado = new DisciplinaAdicionarValidatorDTO().Validate(disciplinaDto);
+
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
     var disciplina = new Disciplina
     {
         Id = Guid.NewGuid(),
@@ -239,10 +253,13 @@ app.MapGet("disciplina/listar", (RoomFlowContext context) =>
 
 app.MapPut("disciplina/atualizar", (RoomFlowContext context, DisciplinaAtualizarDTO disciplinaDto) =>
     {
-        var disciplina = context.DisciplinaSet.Find(disciplinaDto.Id);
-        if (disciplina is null)
-            return Results.BadRequest(new BaseResponse("Disciplina não Encontrada"));
+        var resultado = new DisciplinaAtualizarValidatorDTO().Validate(disciplinaDto);
 
+        if (!resultado.IsValid)
+            return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
+        var disciplina = context.DisciplinaSet.Find(disciplinaDto.Id);
+        
         disciplina.Nome = disciplinaDto.Nome;
         disciplina.Descricao = disciplinaDto.Descricao;
         context.SaveChanges();
@@ -288,83 +305,128 @@ app.MapGet("disciplina/listar/{id:guid}", (RoomFlowContext context, Guid id) =>
 #endregion
 
 #region Controller Turma
+// Endpoint para Adicionar uma Turma
 app.MapPost("turma/adicionar", (RoomFlowContext context, TurmaAdicionarDTO turmaDto) =>
 {
+    // 1. Validação da requisição
+    var resultado = new TurmaAdicionarValidatorDTO().Validate(turmaDto);
+    if (!resultado.IsValid)
+    {
+        // Retorna 400 Bad Request se a validação falhar, com as mensagens de erro
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+    }
+
+    // 2. Criação da nova entidade Turma
     var turma = new Turma
     {
-        Id = Guid.NewGuid(),
+        Id = Guid.NewGuid(), // Gera um novo GUID para o ID
         Descricao = turmaDto.Descricao,
         CursoId = turmaDto.CursoId,
     };
 
+    // 3. Adiciona a turma ao contexto e salva no banco de dados
     context.TurmaSet.Add(turma);
-
     context.SaveChanges();
+
+    // 4. Retorna 201 Created com uma mensagem de sucesso
+    // Idealmente, você retornaria a URI do recurso criado: Results.Created($"/turma/listar/{turma.Id}", "Turma Cadastrada com Sucesso!");
     return Results.Created("Created", "Turma Cadastrada com Sucesso!");
 })
-    .RequireAuthorization()
-    .WithTags("Turma");
+    .RequireAuthorization() // Requer autenticação
+    .WithTags("Turma"); // Agrupa no Swagger/OpenAPI
 
+
+// Endpoint para Listar Todas as Turmas
 app.MapGet("turma/listar", (RoomFlowContext context) =>
 {
-    var listaturma = context.TurmaSet.Select(p => new
+    // 1. Seleciona as turmas e projeta para um tipo anônimo para evitar expor a entidade completa
+    var listagemTurmas = context.TurmaSet.Select(p => new
     {
-        Id = p.Id,
-        Descricao = p.Descricao,
-        Curso = p.Curso,
+        p.Id,
+        p.Descricao,
+        p.Curso, // Inclui o objeto Curso se for uma propriedade de navegação
     })
-    .AsEnumerable();
-    return Results.Ok(listaturma.AsEnumerable());
+    .AsEnumerable(); // Materializa a query
+
+    // 2. Retorna 200 OK com a lista de turmas
+    return Results.Ok(listagemTurmas);
 })
     .RequireAuthorization()
     .WithTags("Turma");
 
+
+// Endpoint para Atualizar uma Turma
 app.MapPut("turma/atualizar", (RoomFlowContext context, TurmaAtualizarDTO turmaDto) =>
 {
-    var turma = context.TurmaSet.Find(turmaDto.Id);
-    if (turma is null)
-        return Results.BadRequest(new BaseResponse("Turma não Encontrada"));
+    // 1. Validação da requisição
+    var resultado = new TurmaAtualizarValidatorDTO().Validate(turmaDto);
+    if (!resultado.IsValid)
+    {
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+    }
 
+    // 2. Busca a turma pelo ID
+    var turma = context.TurmaSet.Find(turmaDto.Id);
+
+    // 3. Verifica se a turma foi encontrada
+    if (turma is null)
+    {
+        // Retorna 404 Not Found se a turma não existir
+        return Results.NotFound(new BaseResponse("Turma não encontrada para atualização."));
+    }
+
+    // 4. Atualiza as propriedades da turma
     turma.Descricao = turmaDto.Descricao;
     turma.CursoId = turmaDto.CursoId;
 
-
+    // 5. Salva as alterações no banco de dados
     context.SaveChanges();
+
+    // 6. Retorna 200 OK com uma mensagem de sucesso
     return Results.Ok("Turma Atualizada com Sucesso!");
 })
     .RequireAuthorization()
     .WithTags("Turma");
 
+
+// Endpoint para Remover uma Turma
 app.MapDelete("turma/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
 {
+    // 1. Busca a turma pelo ID
     var turma = context.TurmaSet.Find(id);
+
+    // 2. Verifica se a turma foi encontrada
+    if (turma is null)
+    {
+        // Retorna 404 Not Found se a turma não existir
+        return Results.NotFound(new BaseResponse("Turma não encontrada para remoção."));
+    }
+
+    // 3. Remove a turma do contexto e salva no banco de dados
     context.TurmaSet.Remove(turma);
     context.SaveChanges();
+
+    // 4. Retorna 200 OK com uma mensagem de sucesso
     return Results.Ok("Turma Removida com Sucesso!");
 })
     .RequireAuthorization()
     .WithTags("Turma");
 
-app.MapGet("turma/listar/{id:guid}", (RoomFlowContext context, Guid id) =>
+
+// Endpoint para Listar Turmas (Todas ou por ID Opcional)
+app.MapGet("turma/listar-t", (RoomFlowContext context) =>
 {
-    var turma = context.TurmaSet.Find(id);
-
-    if (turma is null)
+    var listagemTurmas = context.TurmaSet.Select(p => new
     {
-        return Results.BadRequest(new BaseResponse("Turma não encontrada"));
-    }
+        p.Id,
+        p.Descricao,
+        p.Curso, // Inclui o objeto Curso se for uma propriedade de navegação
+    })
+    .AsEnumerable();
 
-
-    var turmaDto = new TurmaListarDTO
-    {
-        Id = turma.Id,
-        Descricao = turma.Descricao,
-        CursoId = turma.CursoId,
-    };
-
-    return Results.Ok(turmaDto);
-
-}).RequireAuthorization()
+    return Results.Ok(listagemTurmas);
+})
+    .RequireAuthorization()
     .WithTags("Turma");
 
 #endregion
@@ -372,6 +434,11 @@ app.MapGet("turma/listar/{id:guid}", (RoomFlowContext context, Guid id) =>
 #region controller cursos
 app.MapPost("curso/adicionar", (RoomFlowContext context, CursoAdicionarDTO cursoDto) =>
 {
+    var resultado = new CursoAdicionarValidatorDTO().Validate(cursoDto);
+    
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
     var curso = new Curso
     {
         Id = Guid.NewGuid(),
@@ -403,8 +470,12 @@ app.MapGet("curso/listar", (RoomFlowContext context) =>
 app.MapPut("curso/atualizar", (RoomFlowContext context, CursoAtualizarDTO cursoDto) =>
     {
         var curso = context.CursoSet.Find(cursoDto.Id);
-        if (curso is null)
-            return Results.BadRequest(new BaseResponse("Curso não Encontrado"));
+
+        var resultado = new CursoAtualizarValidatorDTO().Validate(cursoDto);
+
+        if (!resultado.IsValid)
+            return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
         curso.Nome = cursoDto.Nome;
         curso.Periodo = cursoDto.Periodo;
         context.SaveChanges();
@@ -449,6 +520,11 @@ app.MapGet("curso/listar/{id:guid}", (RoomFlowContext context , Guid id) =>
 #region controller usuario
 app.MapPost("usuario/adicionar", (RoomFlowContext context, UsuarioAdicionarDTO usuarioDto) =>
 {
+    var resultado = new UsuarioAdicionarValidatorDTO().Validate(usuarioDto);
+
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
     var usuario = new Usuario
     {
         Nome = usuarioDto.Nome,
@@ -502,8 +578,12 @@ app.MapGet("usuario/listar-ativos", (RoomFlowContext context) =>
 app.MapPut("usuario/atualizar", (RoomFlowContext context, UsuarioAtualizarDTO usuarioDto) =>
 {
     var usuario = context.UsuarioSet.Find(usuarioDto.Id);
-    if (usuario is null)
-        return Results.BadRequest(new BaseResponse("Usuario não Encontrado"));
+
+    var resultado = new UsuarioAtualizarValidatorDTO().Validate(usuarioDto);
+    
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
     usuario.Nome = usuarioDto.Nome;
     usuario.Senha = usuarioDto.Senha;
     usuario.Perfil = usuarioDto.Perfil;
@@ -565,6 +645,11 @@ app.MapPost("aula/adicionar", async (RoomFlowContext context, AulaAdicionarDto a
         return Results.Conflict("Já existe uma aula cadastrada para a mesma sala, bloco e data.");
     }
 
+    var resultado = new AulaAdicionarValidatorDto().Validate(aulaDto);
+
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
     var aula = new Aula
     {
         Id = Guid.NewGuid(),
@@ -606,8 +691,10 @@ app.MapPut("aula/atualizar", (RoomFlowContext context, AulaAtualizarDto aulaDto)
     {
         var aula = context.AulaSet.Find(aulaDto.Id);
 
-        if (aula is null)
-            return Results.BadRequest(new BaseResponse("Aula não Encontrada"));
+        var resultado = new AulaAtualizarValidatorDto().Validate(aulaDto);
+
+        if (!resultado.IsValid)
+            return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
 
         aula.DisciplinaId = aulaDto.DisciplinaId;
         aula.SalaId = aulaDto.SalaId;
@@ -634,6 +721,11 @@ app.MapDelete("aula/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
 app.MapPost("aula/gerador", (RoomFlowContext context, AulaAdicionarDto aulaDto) =>
 
 {
+    var resultado = new AulaAdicionarValidatorDto().Validate(aulaDto);
+
+    if (!resultado.IsValid)
+        return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
+
     var aulas = new List<Aula>();
 
     DateTime dataAtual = aulaDto.DataInicio;
@@ -715,7 +807,7 @@ app.MapPost("autenticar", (RoomFlowContext context, LoginDto loginDto) =>
                 new Claim("Id", usuario.Id.ToString()),
                 new Claim("Nome", usuario.Nome),
                 new Claim("Login", usuario.Login),
-                new Claim(ClaimTypes.Role, usuario.Perfil.ToString()),
+                new Claim("Perfil", ((int)usuario.Perfil).ToString())
             };
 
             //Recebe uma instância da Classe
