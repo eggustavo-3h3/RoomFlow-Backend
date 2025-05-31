@@ -14,13 +14,13 @@ namespace RoomFlowApi.Infra.Data.Configurations
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.Property(p => p.StatusSala)     
-                .IsRequired()
-                .HasConversion<string>();
+            builder.Property(p => p.StatusSala)
+                .IsRequired();
 
-            builder.Property (p => p.TipoSala)
-                .IsRequired()
-                .HasConversion<string>();
+
+            builder.Property(p => p.TipoSala)
+                .IsRequired();
+                
             
 
             builder.ToTable("TAB_Sala");

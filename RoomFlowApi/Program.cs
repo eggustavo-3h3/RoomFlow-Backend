@@ -134,7 +134,7 @@ app.MapPost("sala/adicionar", (RoomFlowContext context, SalaAdicionarDTO SalaAdi
     return Results.Created("Created", "Sala Cadastrada com Sucesso!");
     
 })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Sala");
 
 app.MapGet("sala/listar", (RoomFlowContext context) =>
@@ -170,7 +170,7 @@ app.MapPut("sala/atualizar", (RoomFlowContext context, SalaAtualizarDTO salaDto)
 
     return Results.Ok(new BaseResponse("Sala Atualizada com Sucesso!"));
 })
-       .RequireAuthorization()
+       //.RequireAuthorization()
     .WithTags("Sala");
 
 app.MapDelete("sala/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
@@ -185,7 +185,7 @@ app.MapDelete("sala/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
     return Results.Ok(new BaseResponse("Sala Removida com Sucesso!"));
     
 })
-       .RequireAuthorization()
+       //.RequireAuthorization()
     .WithTags("Sala");
 
 app.MapGet("sala/listar/{id:guid}", (RoomFlowContext context, Guid id ) =>
@@ -206,7 +206,8 @@ app.MapGet("sala/listar/{id:guid}", (RoomFlowContext context, Guid id ) =>
 
     return Results.Ok(salaDto);
 
-}).RequireAuthorization()
+})
+    //.RequireAuthorization()
     .WithTags("Sala");
 
 #endregion
@@ -231,7 +232,7 @@ app.MapPost("disciplina/adicionar", (RoomFlowContext context, DisciplinaAdcionar
 
     return Results.Created("Created", "Disciplina Cadastrada com Sucesso!");
 })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Disciplina");
 
 app.MapGet("disciplina/listar", (RoomFlowContext context) =>
@@ -248,7 +249,7 @@ app.MapGet("disciplina/listar", (RoomFlowContext context) =>
 
     return Results.Ok(listaDisciplina);
 })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Disciplina");
 
 app.MapPut("disciplina/atualizar", (RoomFlowContext context, DisciplinaAtualizarDTO disciplinaDto) =>
@@ -265,7 +266,7 @@ app.MapPut("disciplina/atualizar", (RoomFlowContext context, DisciplinaAtualizar
         context.SaveChanges();
         return Results.Ok("Disciplina Atualizada com Sucesso!");
     })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Disciplina");
 
 
@@ -297,7 +298,8 @@ app.MapGet("disciplina/listar/{id:guid}", (RoomFlowContext context, Guid id) =>
 
     return Results.Ok(disciplinaDto);
 
-}).RequireAuthorization()
+})
+    //.RequireAuthorization()
     .WithTags("Disciplina");
 
 
@@ -332,7 +334,7 @@ app.MapPost("turma/adicionar", (RoomFlowContext context, TurmaAdicionarDTO turma
     // Idealmente, você retornaria a URI do recurso criado: Results.Created($"/turma/listar/{turma.Id}", "Turma Cadastrada com Sucesso!");
     return Results.Created("Created", "Turma Cadastrada com Sucesso!");
 })
-    .RequireAuthorization() // Requer autenticação
+   // .RequireAuthorization() // Requer autenticação
     .WithTags("Turma"); // Agrupa no Swagger/OpenAPI
 
 
@@ -351,7 +353,7 @@ app.MapGet("turma/listar", (RoomFlowContext context) =>
     // 2. Retorna 200 OK com a lista de turmas
     return Results.Ok(listagemTurmas);
 })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Turma");
 
 
@@ -385,7 +387,7 @@ app.MapPut("turma/atualizar", (RoomFlowContext context, TurmaAtualizarDTO turmaD
     // 6. Retorna 200 OK com uma mensagem de sucesso
     return Results.Ok("Turma Atualizada com Sucesso!");
 })
-    .RequireAuthorization()
+   // .RequireAuthorization()
     .WithTags("Turma");
 
 
@@ -409,7 +411,7 @@ app.MapDelete("turma/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
     // 4. Retorna 200 OK com uma mensagem de sucesso
     return Results.Ok("Turma Removida com Sucesso!");
 })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Turma");
 
 
@@ -426,7 +428,7 @@ app.MapGet("turma/listar-t", (RoomFlowContext context) =>
 
     return Results.Ok(listagemTurmas);
 })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Turma");
 
 #endregion
@@ -450,7 +452,7 @@ app.MapPost("curso/adicionar", (RoomFlowContext context, CursoAdicionarDTO curso
     context.SaveChanges();
     return Results.Created("Created", "Curso Cadastrada com Sucesso!");
 })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Curso");
 
 app.MapGet("curso/listar", (RoomFlowContext context) =>
@@ -464,7 +466,7 @@ app.MapGet("curso/listar", (RoomFlowContext context) =>
 
     return Results.Ok(listacurso.AsEnumerable());
 })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Curso");
 
 app.MapPut("curso/atualizar", (RoomFlowContext context, CursoAtualizarDTO cursoDto) =>
@@ -480,7 +482,8 @@ app.MapPut("curso/atualizar", (RoomFlowContext context, CursoAtualizarDTO cursoD
         curso.Periodo = cursoDto.Periodo;
         context.SaveChanges();
         return Results.Ok("Curso Atualizado com Sucesso!");
-    }).RequireAuthorization()
+    })
+    //.RequireAuthorization()
     .WithTags("Curso");
 
 app.MapDelete("curso/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
@@ -490,7 +493,7 @@ app.MapDelete("curso/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
         context.SaveChanges();
         return Results.Ok("Curso Removido com Sucesso!");
     })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Curso");
 
 app.MapGet("curso/listar/{id:guid}", (RoomFlowContext context , Guid id) =>
@@ -512,7 +515,8 @@ app.MapGet("curso/listar/{id:guid}", (RoomFlowContext context , Guid id) =>
 
     return Results.Ok(cursoDto);
 
-}).RequireAuthorization()
+})
+    //.RequireAuthorization()
     .WithTags("Curso");
 
 #endregion
@@ -538,7 +542,7 @@ app.MapPost("usuario/adicionar", (RoomFlowContext context, UsuarioAdicionarDTO u
     context.SaveChanges();
     return Results.Created("Created", "Usuario Cadastrada com Sucesso!");
 })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Usuário");
 
 app.MapGet("usuario/listar", (RoomFlowContext context) =>
@@ -556,7 +560,7 @@ app.MapGet("usuario/listar", (RoomFlowContext context) =>
 
     return Results.Ok(listaUsuarios);
 })
-.RequireAuthorization()
+//.RequireAuthorization()
 .WithTags("Usuário");
 
 app.MapGet("usuario/listar-ativos", (RoomFlowContext context) =>
@@ -572,7 +576,7 @@ app.MapGet("usuario/listar-ativos", (RoomFlowContext context) =>
         }).ToList();
     return Results.Ok(ListaUsuariosAtivos.AsEnumerable());
 })
-.RequireAuthorization()
+//.RequireAuthorization()
 .WithTags("Usuário");
 
 app.MapPut("usuario/atualizar", (RoomFlowContext context, UsuarioAtualizarDTO usuarioDto) =>
@@ -591,7 +595,7 @@ app.MapPut("usuario/atualizar", (RoomFlowContext context, UsuarioAtualizarDTO us
     context.SaveChanges();
     return Results.Ok("Usuario Atualizada com Sucesso!");
 })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Usuário");
 
 app.MapDelete("usuario/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
@@ -602,7 +606,7 @@ app.MapDelete("usuario/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
         context.SaveChanges();
         return Results.Ok("Usuario Removido com Sucesso!");
     })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Usuário");
 
 app.MapGet("usuario/listar/{id:guid}", (RoomFlowContext context, Guid id) =>
@@ -627,7 +631,8 @@ app.MapGet("usuario/listar/{id:guid}", (RoomFlowContext context, Guid id) =>
 
     return Results.Ok(usuarioDto);
 
-}).RequireAuthorization()
+})
+    //.RequireAuthorization()
     .WithTags("Usuário");
 
 #endregion
@@ -666,7 +671,7 @@ app.MapPost("aula/adicionar", async (RoomFlowContext context, AulaAdicionarDto a
 
     return Results.Created($"/aula/{aula.Disciplina}", "Aula Cadastrada com Sucesso!");
 })
-.RequireAuthorization()
+//.RequireAuthorization()
 .WithTags("Aula");
 
 app.MapGet("aula/listar", (RoomFlowContext context) =>
@@ -704,7 +709,7 @@ app.MapPut("aula/atualizar", (RoomFlowContext context, AulaAtualizarDto aulaDto)
         context.SaveChanges();
         return Results.Ok("Aula Atualizada com Sucesso!");
     })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Aula");
 
 app.MapDelete("aula/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
@@ -715,7 +720,7 @@ app.MapDelete("aula/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
         context.SaveChanges();
         return Results.Ok("Aula Removida com Sucesso!");
     })
-    .RequireAuthorization()
+    //.RequireAuthorization()
     .WithTags("Aula");
 
 app.MapPost("aula/gerador", (RoomFlowContext context, AulaAdicionarDto aulaDto) =>
@@ -788,7 +793,8 @@ app.MapGet("aula/listar/{id:guid}", (RoomFlowContext context, Guid id) =>
 
     return Results.Ok(aulaDto);
 
-}).RequireAuthorization()
+})
+    //.RequireAuthorization()
     .WithTags("Aula");
 
 
