@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Globalization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -292,7 +293,8 @@ app.MapGet("sala/listar", (RoomFlowContext context) =>
         Descricao = p.Descricao,
         StatusSala = p.StatusSala,
         TipoSala = p.TipoSala,
-        NumeroSala = p.NumeroSala
+        NumeroSala = p.NumeroSala,
+        FlagExibirNumeroSala = p.FlagExibirNumeroSala
     }).AsEnumerable();
 
     return Results.Ok(salas);
@@ -312,6 +314,7 @@ app.MapGet("sala/obter/{id:guid}", (RoomFlowContext context, Guid id) =>
         StatusSala = sala.StatusSala,
         TipoSala = sala.TipoSala,
         NumeroSala = sala.NumeroSala,
+        FlagExibirNumeroSala = sala.FlagExibirNumeroSala
     };
 
     return Results.Ok(salaDto);
@@ -383,7 +386,7 @@ app.MapGet("turma/listar", (RoomFlowContext context) =>
 {
     var turmas = context.TurmaSet.Include(p => p.Curso).Select(p => new TurmaListarDto()
     {
-        Id = p.CursoId,
+        Id = p.Id,
         Descricao = p.Descricao,
         Curso = new CursoListarDto
         {
@@ -919,7 +922,7 @@ app.MapPost("autenticar", (RoomFlowContext context, LoginDto loginDto) =>
         new Claim("Id", usuario.Id.ToString()),
         new Claim("Nome", usuario.Nome),
         new Claim("Login", usuario.Login),
-        new Claim("Perfil", ((int)usuario.Perfil).ToString())
+        new Claim(ClaimTypes.Role, usuario.Perfil.ToString())
     };
 
     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("{4ea4267e-eeae-4a10-8a05-8c237c13cb55}"));
@@ -1044,49 +1047,70 @@ app.MapGet("mapa/listar", (RoomFlowContext context) =>
         Descricao = s.Descricao,
         TipoSala = s.TipoSala,
         StatusSala = s.StatusSala,
-        FlagExibirNumeroSala = s.FlagExibirNumeroSala
+        FlagExibirNumeroSala = s.FlagExibirNumeroSala,
+    }).ToList();
+
+    salas.ForEach(sala =>
+    {
+        sala.Aula = sala.StatusSala == EnumStatusSala.Ocupada ? ObterAula(context, sala.SalaId) : null;
     });
 
-    salas.Where(p => p.StatusSala == EnumStatusSala.Ocupada).ToList().ForEach(sala =>
+    return Results.Ok(salas.OrderBy(p => p.NumeroSala));
+}).WithTags("Mapa");
+
+#endregion
+
+#region Utils
+
+MapaAulaDto? ObterAula(RoomFlowContext context, Guid salaId)
+{
+    var aula = context.AulaSet.FirstOrDefault(a => a.SalaId == salaId && a.Data.Date == DateTime.Now.Date);
+
+    if (aula is not null)
     {
-        var aula = context.AulaSet.FirstOrDefault(a => a.SalaId == sala.SalaId && a.Data.Date == DateTime.Now.Date);
+        var disciplina = context.DisciplinaSet.FirstOrDefault(d => d.Id == aula.DisciplinaId);
+        var professor = context.UsuarioSet.FirstOrDefault(u => u.Id == aula.ProfessorId);
+        var turma = context.TurmaSet.FirstOrDefault(t => t.Id == aula.TurmaId);
 
-        if (aula is not null)
+        Curso? curso = null;
+        if (turma is not null)
+            curso = context.CursoSet.FirstOrDefault(c => c.Id == turma.CursoId);
+
+        var mapaAulaDto = new MapaAulaDto
         {
-            var disciplina = context.DisciplinaSet.FirstOrDefault(d => d.Id == aula.DisciplinaId);
-            var professor = context.UsuarioSet.FirstOrDefault(u => u.Id == aula.ProfessorId);
-            var turma = context.TurmaSet.FirstOrDefault(t => t.Id == aula.TurmaId);
-            
-            Curso? curso = null;
-            if (turma is not null)
-                curso = context.CursoSet.FirstOrDefault(c => c.Id == turma.CursoId);
-
-            sala.Aula = new MapaAulaDto
-            {
-                Disciplina = disciplina != null ? new MapaDisciplinaDto
+            Disciplina = disciplina != null
+                ? new MapaDisciplinaDto
                 {
                     Nome = disciplina.Nome,
                     Descricao = disciplina.Descricao
-                } : null,
-                Professor = professor != null ? new MapaProfessorDto
+                }
+                : null,
+            Professor = professor != null
+                ? new MapaProfessorDto
                 {
                     Nome = professor.Nome
-                } : null,
-                Turma = turma != null ? new MapaTurmaDto
+                }
+                : null,
+            Turma = turma != null
+                ? new MapaTurmaDto
                 {
                     Descricao = turma.Descricao
-                } : null,
-                Curso = curso != null ? new MapaCursoDto
+                }
+                : null,
+            Curso = curso != null
+                ? new MapaCursoDto
                 {
                     Nome = curso.Nome,
                     Periodo = curso.Periodo
-                } : null
-            };
-        }
-    });
-    
-    return Results.Ok(salas);
-}).WithTags("Mapa");
+                }
+                : null
+        };
+
+        return mapaAulaDto;
+    }
+
+    return null;
+}
 
 #endregion
 
