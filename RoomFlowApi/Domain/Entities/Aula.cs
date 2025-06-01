@@ -12,14 +12,14 @@ namespace RoomFlowApi.Domain.Entities
         public DateTime Data { get; set; }
         public Guid ProfessorId { get; set; }
         public Guid CursoId { get; set; }
-
         
         #region Propriedades de Navegabilidade
 
-        public  Disciplina? Disciplina { get; set; } 
-        public  Sala? Sala { get; set; }
-        public  Turma? Turma { get; set; }
-        public  Usuario? Usuario { get; set; }
+        public Disciplina Disciplina { get; set; } = null!;
+        public Sala Sala { get; set; } = null!;
+        public Turma Turma { get; set; } = null!;
+        public Usuario Professor { get; set; } = null!;
+        public Curso Curso { get; set; } = null!;
 
         #endregion
     }

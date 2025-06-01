@@ -11,17 +11,24 @@ namespace RoomFlowApi.Infra.Data.Configurations
             builder.HasKey(p => p.Id);
 
             builder.Property(p => p.Nome)
-                .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(150)
+                .IsRequired();
+
+            builder.Property(p => p.Login)
+                .HasMaxLength(50)
+                .IsRequired();
 
             builder.Property(p => p.Senha)
+                .HasMaxLength(250)
                 .IsRequired();
-            // Adicionar lógica para valor mínimo de caracteres.
-
+            
             builder.Property(p => p.ChaveResetSenha)
                 .IsRequired(false);
 
             builder.Property(p => p.Perfil)
+                .IsRequired();
+
+            builder.Property(p => p.Status)
                 .IsRequired();
 
             builder.ToTable("TAB_Usuario");

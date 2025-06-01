@@ -2,8 +2,8 @@
 {
     public enum EnumStatusUsuario
     {
-        Pendente = 0,
-        Ativo = 1,
-        Inativo = 2
+        Pendente = 1,
+        Ativo = 2,
+        Inativo = 3
     }
 }

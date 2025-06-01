@@ -10,18 +10,21 @@ namespace RoomFlowApi.Infra.Data.Configurations
         {
             builder.HasKey(p => p.Id);
 
+            builder.Property(p => p.NumeroSala)
+                .IsRequired();
+
             builder.Property(p => p.Descricao)
-                .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(100)
+                .IsRequired();
 
             builder.Property(p => p.StatusSala)
                 .IsRequired();
 
-
             builder.Property(p => p.TipoSala)
                 .IsRequired();
-                
-            
+
+            builder.Property(p => p.FlagExibirNumeroSala)
+                .IsRequired();
 
             builder.ToTable("TAB_Sala");
         }

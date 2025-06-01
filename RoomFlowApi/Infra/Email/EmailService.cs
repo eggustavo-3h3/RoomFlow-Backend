@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Net.Mail;
-using RoomFlowApi.Domain.DTO.Email;
+using RoomFlowApi.Domain.DTOs.Email;
 
 namespace RoomFlowApi.Infra.Email;
 

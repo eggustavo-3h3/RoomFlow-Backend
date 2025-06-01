@@ -10,7 +10,6 @@ namespace RoomFlowApi.Domain.Entities
         public string Senha { get; set; } = string.Empty;
         public Guid? ChaveResetSenha { get; set; }
         public EnumPerfilUsuario Perfil { get; set; }
-
-        public EnumStatusUsuario Status { get; set; }
+        public EnumStatusUsuario Status { get; set; } = EnumStatusUsuario.Pendente;
     }    
 }

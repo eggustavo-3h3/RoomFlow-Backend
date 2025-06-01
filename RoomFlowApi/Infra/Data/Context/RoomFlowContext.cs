@@ -6,22 +6,21 @@ namespace RoomFlowApi.Infra.Data.Context
 {
     public class RoomFlowContext : DbContext
     {
-        public DbSet<Curso> CursoSet { get; set; }
-        public DbSet<Sala> SalaSet { get; set; }
-        public DbSet<Usuario> UsuarioSet { get; set; }
-        public DbSet<Turma> TurmaSet { get; set; }
-        public DbSet<Disciplina> DisciplinaSet { get; set; }
         public DbSet<Aula> AulaSet { get; set; }
-        
+        public DbSet<Curso> CursoSet { get; set; }
+        public DbSet<Disciplina> DisciplinaSet { get; set; }
+        public DbSet<Sala> SalaSet { get; set; }
+        public DbSet<Turma> TurmaSet { get; set; }
+        public DbSet<Usuario> UsuarioSet { get; set; }
        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new CursoConfiguration());
-            modelBuilder.ApplyConfiguration(new SalaConfiguration());
-            modelBuilder.ApplyConfiguration(new UsuarioConfiguration());
-            modelBuilder.ApplyConfiguration(new TurmaConfiguration());
-            modelBuilder.ApplyConfiguration(new DisciplinaConfiguration());
             modelBuilder.ApplyConfiguration(new AulaConfiguration());
+            modelBuilder.ApplyConfiguration(new CursoConfiguration());
+            modelBuilder.ApplyConfiguration(new DisciplinaConfiguration());
+            modelBuilder.ApplyConfiguration(new SalaConfiguration());
+            modelBuilder.ApplyConfiguration(new TurmaConfiguration());
+            modelBuilder.ApplyConfiguration(new UsuarioConfiguration());
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
