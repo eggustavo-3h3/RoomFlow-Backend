@@ -14,7 +14,8 @@ namespace RoomFlowApi.Infra.Data.Configurations
                 .IsRequired() 
                 .HasMaxLength(50);
 
-            builder.Property(p => p.Periodo) 
+            builder.Property(p => p.Periodo)
+                .HasConversion<string>()
                 .IsRequired();
 
             builder.ToTable("TAB_Curso");

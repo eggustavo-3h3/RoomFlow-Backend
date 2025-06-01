@@ -22,6 +22,8 @@ using RoomFlowApi.Domain.Enumerators;
 using RoomFlowApi.Domain.Extensions;
 using RoomFlowApi.Domain.DTOs.Signup;
 using RoomFlowApi.Domain.DTOs.Mapa;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Json;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -93,6 +95,11 @@ builder.Services.AddAuthentication(
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("Administrador", policy => policy.RequireRole("Administrador"))
     .AddPolicy("Professor", policy => policy.RequireRole("Professor", "Administrador"));
+
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 var app = builder.Build();
 
@@ -1014,7 +1021,8 @@ app.MapPost("signup", (RoomFlowContext context, SignupDto signupDto) =>
         Nome = signupDto.Nome,
         Login = signupDto.Login,
         Senha = signupDto.Senha.EncryptPassword(),
-        Perfil = EnumPerfilUsuario.Administrador
+        Perfil = EnumPerfilUsuario.Administrador,
+        Status = EnumStatusUsuario.Ativo
     };
 
     context.UsuarioSet.Add(usuario);

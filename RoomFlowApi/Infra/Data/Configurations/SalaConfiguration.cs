@@ -18,9 +18,11 @@ namespace RoomFlowApi.Infra.Data.Configurations
                 .IsRequired();
 
             builder.Property(p => p.StatusSala)
+                .HasConversion<string>()
                 .IsRequired();
 
             builder.Property(p => p.TipoSala)
+                .HasConversion<string>()
                 .IsRequired();
 
             builder.Property(p => p.FlagExibirNumeroSala)

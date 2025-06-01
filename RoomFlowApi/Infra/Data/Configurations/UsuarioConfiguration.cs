@@ -26,9 +26,11 @@ namespace RoomFlowApi.Infra.Data.Configurations
                 .IsRequired(false);
 
             builder.Property(p => p.Perfil)
+                .HasConversion<string>()
                 .IsRequired();
 
             builder.Property(p => p.Status)
+                .HasConversion<string>()
                 .IsRequired();
 
             builder.ToTable("TAB_Usuario");
