@@ -407,7 +407,7 @@ app.MapGet("turma/obter/{id:guid}", (RoomFlowContext context, Guid id) =>
 
     var turmaDto = new TurmaListarDto
     {
-        Id = turma.CursoId,
+        Id = turma.Id,
         Descricao = turma.Descricao,
         Curso = new CursoListarDto
         {
@@ -847,7 +847,7 @@ app.MapPost("usuario/adicionar", (RoomFlowContext context, UsuarioAdicionarDto u
     context.SaveChanges();
 
     return Results.Created("Created", "Usuario Cadastrada com Sucesso!");
-}).RequireAuthorization().WithTags("Usuário");
+}).WithTags("Usuário");
 
 app.MapPut("usuario/atualizar", (RoomFlowContext context, UsuarioAtualizarDto usuarioDto) =>
 {
