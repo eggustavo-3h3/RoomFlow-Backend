@@ -1080,16 +1080,6 @@ MapaAulaDto? ObterAula(RoomFlowContext context, Guid salaId, DateOnly data, Enum
         if (turma is not null)
             curso = context.CursoSet.FirstOrDefault(c => c.Id == turma.CursoId);
 
-/*
- *    public DateTime Data { get; set; }
-   public DayOfWeek DiaSemana { get; set; }
-   public DateTime DataInicio { get; set; }
-   public DateTime DataFim { get; set; }
-   public EnumBloco Bloco { get; set; }
- *
- */
-
-
         var mapaAulaDto = new MapaAulaDto
         {
             Disciplina = disciplina != null
