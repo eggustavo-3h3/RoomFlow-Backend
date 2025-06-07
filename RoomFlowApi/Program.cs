@@ -24,7 +24,8 @@ using RoomFlowApi.Domain.Extensions;
 using RoomFlowApi.Domain.DTOs.Signup;
 using RoomFlowApi.Domain.DTOs.Mapa;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
+using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -479,8 +480,8 @@ app.MapGet("aula/listar", (RoomFlowContext context) =>
     var aulas = context.AulaSet
         .Include(p => p.Disciplina)
         .Include(p => p.Sala)
-        .Include(p => p.TurmaId)
-        .Include(p => p.ProfessorId)
+        .Include(p => p.Turma)
+        .Include(p => p.Professor)
         .Include(p => p.Curso)
         .Include(aula => aula.Professor)
         .Include(aula => aula.Turma)
@@ -709,50 +710,50 @@ app.MapDelete("aula/remover/{id:guid}", (RoomFlowContext context, Guid id) =>
     return Results.Ok("Aula Removida com Sucesso!");
 }).RequireAuthorization().WithTags("Aula");
 
-app.MapPost("aula/gerador", (RoomFlowContext context, AulaAdicionarDto aulaAdicionarDto) =>
+app.MapPost("aula/gerador", (RoomFlowContext context, GeradorAulaDto geradorAulaDto) =>
 {
-    var resultado = new AulaAdicionarValidatorDto().Validate(aulaAdicionarDto);
+    var resultado = new GeradorAulaValidatorDto().Validate(geradorAulaDto);
 
     if (!resultado.IsValid)
         return Results.BadRequest(resultado.Errors.Select(error => error.ErrorMessage));
 
-    var sala = context.SalaSet.Find(aulaAdicionarDto.SalaId);
+    var sala = context.SalaSet.Find(geradorAulaDto.SalaId);
     if (sala is null)
         return Results.BadRequest(new BaseResponse("Sala não encontrada."));
 
-    var turma = context.TurmaSet.Find(aulaAdicionarDto.TurmaId);
+    var turma = context.TurmaSet.Find(geradorAulaDto.TurmaId);
     if (turma is null)
         return Results.BadRequest(new BaseResponse("Turma não encontrada."));
 
-    var professor = context.UsuarioSet.Find(aulaAdicionarDto.ProfessorId);
+    var professor = context.UsuarioSet.Find(geradorAulaDto.ProfessorId);
     if (professor is null)
         return Results.BadRequest(new BaseResponse("Professor não encontrado."));
 
-    var curso = context.CursoSet.Find(aulaAdicionarDto.CursoId);
+    var curso = context.CursoSet.Find(geradorAulaDto.CursoId);
     if (curso is null)
         return Results.BadRequest(new BaseResponse("Curso não encontrado."));
 
     var aulas = new List<Aula>();
 
-    var dataAtual = aulaAdicionarDto.DataInicio;
+    var dataAtual = geradorAulaDto.DataInicio;
 
-    while (dataAtual.DayOfWeek != aulaAdicionarDto.DiaSemana)
+    while (dataAtual.DayOfWeek != geradorAulaDto.DiaSemana)
     {
         dataAtual = dataAtual.AddDays(1);
     }
 
-    while (dataAtual <= aulaAdicionarDto.DataFim)
+    while (dataAtual <= geradorAulaDto.DataFim)
     {
         var aula = new Aula
         {
             Id = Guid.NewGuid(),
-            DisciplinaId = aulaAdicionarDto.DisciplinaId,
-            SalaId = aulaAdicionarDto.SalaId,
-            TurmaId = aulaAdicionarDto.TurmaId,
+            DisciplinaId = geradorAulaDto.DisciplinaId,
+            SalaId = geradorAulaDto.SalaId,
+            TurmaId = geradorAulaDto.TurmaId,
             Data = dataAtual,
-            ProfessorId = aulaAdicionarDto.ProfessorId,
-            Bloco = aulaAdicionarDto.Bloco,
-            CursoId = aulaAdicionarDto.CursoId
+            ProfessorId = geradorAulaDto.ProfessorId,
+            Bloco = geradorAulaDto.Bloco,
+            CursoId = geradorAulaDto.CursoId
         };
 
         aulas.Add(aula);
@@ -1038,8 +1039,9 @@ app.MapPost("signup", (RoomFlowContext context, SignupDto signupDto) =>
 
 #region Mapa
 
-app.MapGet("mapa/listar", (RoomFlowContext context) =>
+app.MapGet("mapa/listar", (RoomFlowContext context, [FromQuery] DateOnly data, [FromQuery] EnumBloco? bloco) =>
 {
+    // data e bloco
     var salas = context.SalaSet.Select(s => new MapaSalaDto
     {
         SalaId = s.Id,
@@ -1052,7 +1054,7 @@ app.MapGet("mapa/listar", (RoomFlowContext context) =>
 
     salas.ForEach(sala =>
     {
-        sala.Aula = sala.StatusSala == EnumStatusSala.Ocupada ? ObterAula(context, sala.SalaId) : null;
+        sala.Aula = sala.StatusSala != EnumStatusSala.Disponivel ? ObterAula(context, sala.SalaId, data, bloco) : null;
     });
 
     return Results.Ok(salas.OrderBy(p => p.NumeroSala));
@@ -1062,9 +1064,11 @@ app.MapGet("mapa/listar", (RoomFlowContext context) =>
 
 #region Utils
 
-MapaAulaDto? ObterAula(RoomFlowContext context, Guid salaId)
+MapaAulaDto? ObterAula(RoomFlowContext context, Guid salaId, DateOnly data, EnumBloco? bloco)
 {
-    var aula = context.AulaSet.FirstOrDefault(a => a.SalaId == salaId && a.Data.Date == DateTime.Now.Date);
+    var aula = bloco is null ? 
+        context.AulaSet.FirstOrDefault(a => a.SalaId == salaId && a.Data >= data.ToDateTime(TimeOnly.MinValue) && a.Data.Date <= data.ToDateTime(TimeOnly.MaxValue)) : 
+        context.AulaSet.FirstOrDefault(a => a.SalaId == salaId && a.Data >= data.ToDateTime(TimeOnly.MinValue) && a.Data.Date <= data.ToDateTime(TimeOnly.MaxValue) && a.Bloco == bloco);
 
     if (aula is not null)
     {
@@ -1075,6 +1079,16 @@ MapaAulaDto? ObterAula(RoomFlowContext context, Guid salaId)
         Curso? curso = null;
         if (turma is not null)
             curso = context.CursoSet.FirstOrDefault(c => c.Id == turma.CursoId);
+
+/*
+ *    public DateTime Data { get; set; }
+   public DayOfWeek DiaSemana { get; set; }
+   public DateTime DataInicio { get; set; }
+   public DateTime DataFim { get; set; }
+   public EnumBloco Bloco { get; set; }
+ *
+ */
+
 
         var mapaAulaDto = new MapaAulaDto
         {
@@ -1103,7 +1117,10 @@ MapaAulaDto? ObterAula(RoomFlowContext context, Guid salaId)
                     Nome = curso.Nome,
                     Periodo = curso.Periodo
                 }
-                : null
+                : null,
+            Bloco = aula.Bloco,
+            Data = aula.Data,
+            DiaSemana = aula.Data.DayOfWeek
         };
 
         return mapaAulaDto;

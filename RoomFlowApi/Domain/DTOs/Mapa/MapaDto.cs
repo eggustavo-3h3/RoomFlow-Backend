@@ -21,8 +21,8 @@ public class MapaAulaDto
     public MapaProfessorDto? Professor { get; set; }
     public DateTime Data { get; set; }
     public DayOfWeek DiaSemana { get; set; }
-    public DateTime DataInicio { get; set; }
-    public DateTime DataFim { get; set; }
+    //public DateTime DataInicio { get; set; }
+    //public DateTime DataFim { get; set; }
     public EnumBloco Bloco { get; set; }
 }
 
