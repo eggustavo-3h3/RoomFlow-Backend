@@ -292,7 +292,6 @@ app.MapGet("sala/listar", (RoomFlowContext context) =>
     {
         Id = p.Id,
         Descricao = p.Descricao,
-        StatusSala = p.StatusSala,
         TipoSala = p.TipoSala,
         NumeroSala = p.NumeroSala,
         FlagExibirNumeroSala = p.FlagExibirNumeroSala
@@ -312,7 +311,6 @@ app.MapGet("sala/obter/{id:guid}", (RoomFlowContext context, Guid id) =>
     {
         Id = sala.Id,
         Descricao = sala.Descricao,
-        StatusSala = sala.StatusSala,
         TipoSala = sala.TipoSala,
         NumeroSala = sala.NumeroSala,
         FlagExibirNumeroSala = sala.FlagExibirNumeroSala
@@ -333,7 +331,6 @@ app.MapPost("sala/adicionar", (RoomFlowContext context, SalaAdicionarDto salaAdi
         Id = Guid.NewGuid(),
         NumeroSala = salaAdicionarDto.NumeroSala,
         Descricao = salaAdicionarDto.Descricao,
-        StatusSala = salaAdicionarDto.StatusSala,
         TipoSala = salaAdicionarDto.TipoSala,
         FlagExibirNumeroSala = salaAdicionarDto.FlagExibirNumeroSala
     };
@@ -357,7 +354,6 @@ app.MapPut("sala/atualizar", (RoomFlowContext context, SalaAtualizarDto salaAtua
 
     sala.NumeroSala = salaAtualizarDto.NumeroSala;
     sala.Descricao = salaAtualizarDto.Descricao;
-    sala.StatusSala = salaAtualizarDto.StatusSala;
     sala.TipoSala = salaAtualizarDto.TipoSala;
     sala.FlagExibirNumeroSala = salaAtualizarDto.FlagExibirNumeroSala;
 
@@ -501,7 +497,6 @@ app.MapGet("aula/listar", (RoomFlowContext context) =>
                 Id = p.Sala.Id,
                 NumeroSala = p.Sala.NumeroSala,
                 Descricao = p.Sala.Descricao,
-                StatusSala = p.Sala.StatusSala,
                 TipoSala = p.Sala.TipoSala,
                 FlagExibirNumeroSala = p.Sala.FlagExibirNumeroSala
             },
@@ -567,7 +562,6 @@ app.MapGet("aula/obter{id:guid}", (RoomFlowContext context, Guid id) =>
             Id = aula.Sala.Id,
             NumeroSala = aula.Sala.NumeroSala,
             Descricao = aula.Sala.Descricao,
-            StatusSala = aula.Sala.StatusSala,
             TipoSala = aula.Sala.TipoSala,
             FlagExibirNumeroSala = aula.Sala.FlagExibirNumeroSala
         },
@@ -1048,13 +1042,13 @@ app.MapGet("mapa/listar", (RoomFlowContext context, [FromQuery] DateOnly data, [
         NumeroSala = s.NumeroSala,
         Descricao = s.Descricao,
         TipoSala = s.TipoSala,
-        StatusSala = s.StatusSala,
-        FlagExibirNumeroSala = s.FlagExibirNumeroSala,
+        FlagExibirNumeroSala = s.FlagExibirNumeroSala
     }).ToList();
 
     salas.ForEach(sala =>
     {
-        sala.Aula = sala.StatusSala != EnumStatusSala.Disponivel ? ObterAula(context, sala.SalaId, data, bloco) : null;
+        sala.Aula = ObterAula(context, sala.SalaId, data, bloco);
+        sala.StatusSala = sala.Aula is not null ? EnumStatusSala.Ocupada : EnumStatusSala.Disponivel;
     });
 
     return Results.Ok(salas.OrderBy(p => p.NumeroSala));

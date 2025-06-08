@@ -17,10 +17,6 @@ namespace RoomFlowApi.Infra.Data.Configurations
                 .HasMaxLength(100)
                 .IsRequired();
 
-            builder.Property(p => p.StatusSala)
-                .HasConversion<string>()
-                .IsRequired();
-
             builder.Property(p => p.TipoSala)
                 .HasConversion<string>()
                 .IsRequired();

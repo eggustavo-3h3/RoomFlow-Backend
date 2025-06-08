@@ -20,7 +20,7 @@ namespace RoomFlowApi.Domain.DTOs.Aula
                 .NotEmpty().WithMessage("Sala é obrigatória");
 
             RuleFor(a => a.DiaSemana)
-                .NotEmpty().WithMessage("Dia da semana é obrigatório");
+                .NotNull().WithMessage("Dia da semana é obrigatório");
 
             RuleFor(a => a.DataInicio)
                 .NotEmpty().WithMessage("Data de início é obrigatória")

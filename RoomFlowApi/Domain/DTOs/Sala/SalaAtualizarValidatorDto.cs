@@ -14,10 +14,6 @@ namespace RoomFlowApi.Domain.DTOs.Sala
             RuleFor(s => s.NumeroSala)
                 .NotEmpty().WithMessage("Número da sala é obrigatório.");
 
-            RuleFor(s => s.StatusSala)
-                .NotEmpty().WithMessage("Status da sala é obrigatório")
-                .IsInEnum().WithMessage("Status inexistente");
-
             RuleFor(s => s.TipoSala)
                 .NotEmpty().WithMessage("Tipo de sala é obrigatório")
                 .IsInEnum().WithMessage("Tipo de sala inexistente");
