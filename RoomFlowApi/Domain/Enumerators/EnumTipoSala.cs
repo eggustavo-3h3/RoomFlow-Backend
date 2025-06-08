@@ -7,10 +7,14 @@
         SalaComum = 3,
         LabEnfermagem = 4,
         LabEletrica = 5,
-        LabMecatronica = 6,
+        LabRoboticaAutomacao = 6,
         Oficina = 7,
         Quadra = 8,
         SalaMaker = 9,
         Biblioteca = 10,
+        Auditorio = 11,
+        LabPneumaticaHidraulica = 12,
+        LabMetrologia = 13,
+        LabUsinagemCNC = 14
     }
 }
